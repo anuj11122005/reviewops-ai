@@ -172,6 +172,7 @@ async def run_review_agent_task(
         from contextlib import contextmanager
 
         from app.db.session import get_db
+
         with contextmanager(get_db)() as db:
             review = db.query(Review).filter(Review.pull_request_id == pr_id).first()
             if not review:

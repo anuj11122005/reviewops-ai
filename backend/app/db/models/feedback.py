@@ -30,6 +30,4 @@ class Feedback(TimestampMixin, Base):
     # Optional comment from the user
     comment: Mapped[str | None] = mapped_column(String, nullable=True)
 
-
-
     pull_request: Mapped["PullRequest"] = relationship(back_populates="feedbacks")

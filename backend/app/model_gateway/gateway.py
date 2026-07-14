@@ -40,6 +40,7 @@ class ModelGateway:
         if cached:
             logger.debug("Embeddings found in cache.")
             from typing import cast
+
             return cast(list[list[float]], cached)
 
         logger.info(f"Fetching embeddings from HF model {self.default_embedding_model}")

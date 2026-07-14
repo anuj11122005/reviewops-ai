@@ -118,9 +118,9 @@ class TestWebhookHappyPath:
         # Now send a synchronize event with a new SHA.
         updated = json.loads(json.dumps(_VALID_PAYLOAD))
         updated["action"] = "synchronize"
-        updated["pull_request"]["head"]["sha"] = (
-            "newsha1234567890123456789012345678901234"
-        )
+        updated["pull_request"]["head"][
+            "sha"
+        ] = "newsha1234567890123456789012345678901234"
 
         response = _post_webhook(client, payload=updated)
         assert response.status_code == 200
