@@ -46,7 +46,7 @@ jobs:
         run: isort --check-only .
 
       - name: "[Gate 2] mypy — type checking"
-        run: mypy backend/app --ignore-missing-imports
+        run: mypy app --ignore-missing-imports
 
       - name: "[Gate 3] pytest — unit tests"
         run: pytest -v --tb=short
