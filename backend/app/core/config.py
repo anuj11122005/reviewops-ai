@@ -26,6 +26,10 @@ class Settings(BaseSettings):
 
     # ── GitHub ───────────────────────────────────────────
     github_webhook_secret: str = ""
+    github_token: str = ""
+
+    # ── Hugging Face ───────────────────────────────────────
+    hf_token: str = ""
 
     # ── CORS ─────────────────────────────────────────────
     cors_origins: list[str] = ["http://localhost:3000"]

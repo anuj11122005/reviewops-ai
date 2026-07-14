@@ -5,6 +5,7 @@ malformed JSON, invalid payload schema, and ignored actions.
 """
 
 import json
+from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -15,7 +16,7 @@ from tests.conftest import make_signature
 
 # ── Sample payload ───────────────────────────────────
 
-_VALID_PAYLOAD: dict = {
+_VALID_PAYLOAD: dict[str, Any] = {
     "action": "opened",
     "pull_request": {
         "id": 123456789,
@@ -57,12 +58,12 @@ _VALID_PAYLOAD: dict = {
 
 def _post_webhook(
     client: TestClient,
-    payload: dict | None = None,
+    payload: dict[str, Any] | None = None,
     *,
     event: str = "pull_request",
     signature: str | None = "auto",
     raw_body: bytes | None = None,
-) -> object:
+) -> Any:
     """Helper to POST to the webhook endpoint with correct headers."""
     body = (
         raw_body

@@ -1,11 +1,17 @@
 """PullRequest ORM model — a PR received via GitHub webhook."""
 
 import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.db.models.feedback import Feedback
+    from app.db.models.repository import Repository
+    from app.db.models.review import Review
 
 
 class PullRequest(TimestampMixin, Base):
@@ -31,6 +37,7 @@ class PullRequest(TimestampMixin, Base):
     head_sha: Mapped[str] = mapped_column(String(40), nullable=False)
     base_branch: Mapped[str] = mapped_column(String(255), nullable=False)
     head_branch: Mapped[str] = mapped_column(String(255), nullable=False)
+
     body: Mapped[str | None] = mapped_column(Text, nullable=True)
     opened_at: Mapped[datetime.datetime | None] = mapped_column(
         DateTime(timezone=True),
@@ -38,8 +45,10 @@ class PullRequest(TimestampMixin, Base):
     )
 
     # Relationships
-    repository: Mapped["Repository"] = relationship(  # type: ignore[name-defined]  # noqa: F821
-        "Repository",
-        backref="pull_requests",
-        lazy="select",
+    repository: Mapped["Repository"] = relationship(back_populates="pull_requests")
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="pull_request", cascade="all, delete-orphan"
+    )
+    feedbacks: Mapped[list["Feedback"]] = relationship(
+        back_populates="pull_request", cascade="all, delete-orphan"
     )

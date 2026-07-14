@@ -98,9 +98,12 @@ def create_app() -> FastAPI:
         }
 
     # ── Routers ──────────────────────────────────────────
+    from app.api.routes import feedback
+
     app.include_router(webhooks.router, prefix="/api")
     app.include_router(repositories.router, prefix="/api")
     app.include_router(pull_requests.router, prefix="/api")
+    app.include_router(feedback.router, prefix="/api")
 
     return app
 

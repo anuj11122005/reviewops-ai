@@ -9,7 +9,7 @@ import json
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_settings
@@ -47,6 +47,7 @@ _SUPPORTED_ACTIONS = {"opened", "synchronize", "reopened"}
 )
 async def github_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),  # noqa: B008
     settings: Settings = Depends(get_settings),  # noqa: B008
     x_hub_signature_256: str | None = Header(default=None),
@@ -140,5 +141,5 @@ async def github_webhook(
             "pr_number": payload.pull_request.number,
         },
     )
-    pr = process_pull_request_event(db, payload)
+    pr = process_pull_request_event(db, payload, background_tasks)
     return PullRequestResponse.model_validate(pr)
