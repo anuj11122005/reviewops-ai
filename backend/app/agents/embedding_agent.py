@@ -8,7 +8,6 @@ from qdrant_client import AsyncQdrantClient
 from qdrant_client.http.models import Distance, PointStruct, VectorParams
 
 from app.agents.exceptions import AgentExecutionError
-from app.core.config import get_settings
 from app.model_gateway.gateway import ModelGateway
 
 logger = logging.getLogger(__name__)
@@ -19,7 +18,6 @@ class EmbeddingAgent:
 
     def __init__(self, gateway: ModelGateway) -> None:
         self.gateway = gateway
-        settings = get_settings()
         # Expect Qdrant URL in real scenario, fallback to localhost for now
         self.qdrant = AsyncQdrantClient(url="http://qdrant:6333")
         self.collection_name = "pr_files"
@@ -65,7 +63,7 @@ class EmbeddingAgent:
                 return {}
 
             points = []
-            for idx, (f, emb) in enumerate(zip(valid_files, embeddings)):
+            for idx, (f, emb) in enumerate(zip(valid_files, embeddings, strict=False)):
                 points.append(
                     PointStruct(
                         id=idx + int(input_hash[:8], 16),
