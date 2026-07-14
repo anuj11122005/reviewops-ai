@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════
+   ReviewOps AI — Design Tokens (from design.md §2-3)
+   Dark-mode first; light theme overrides via .light class.
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* Base (Dark — default) */
+  --background: #0B0E14;
+  --surface: #131722;
+  --surface-elevated: #1B2030;
+  --border: #262B3B;
+  --text-primary: #E6E8EF;
+  --text-secondary: #9098AC;
+  --text-muted: #5C6479;
+
+  /* Accent (Brand) */
+  --primary: #4F7CFF;
+  --primary-hover: #6B90FF;
+  --primary-muted: #1E2A4A;
+
+  /* Semantic (Status) */
+  --success: #3DD68C;
+  --warning: #F5B94D;
+  --danger: #F0556B;
+  --info: #5AC8FA;
+}
+
+.light {
+  --background: #F7F8FA;
+  --surface: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --border: #E4E7ED;
+  --text-primary: #14171F;
+  --text-secondary: #5C6479;
+  --text-muted: #9098AC;
+}
+
+/* ── Tailwind v4 theme integration ──────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-muted: var(--primary-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-foreground: var(--text-primary);
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+/* ── Base styles ────────────────────────────────────── */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.3;
+}
+
+/* ── Scrollbar (dark theme) ─────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
