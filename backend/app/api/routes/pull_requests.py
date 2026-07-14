@@ -5,7 +5,7 @@ namespace for Phase 2 AI review output.
 """
 
 import logging
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -66,3 +66,38 @@ def get_pull_request(
             },
         )
     return PullRequestResponse.model_validate(pr)
+
+
+@router.get(
+    "/{pr_id}/review",
+    summary="Get the AI review results for a pull request",
+)
+def get_pull_request_review(
+    pr_id: int,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Return the review results for a PR."""
+    from app.db.models.review import Review
+    from fastapi import HTTPException
+    
+    review = db.query(Review).filter(Review.pull_request_id == pr_id).first()
+    if review is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": {
+                    "code": "NOT_FOUND",
+                    "message": f"Review for pull request {pr_id} not found",
+                }
+            },
+        )
+    
+    return {
+        "id": review.id,
+        "pull_request_id": review.pull_request_id,
+        "status": review.status,
+        "bug_prediction_results": review.bug_prediction_results,
+        "static_analysis_results": review.static_analysis_results,
+        "created_at": review.created_at,
+        "updated_at": review.updated_at,
+    }

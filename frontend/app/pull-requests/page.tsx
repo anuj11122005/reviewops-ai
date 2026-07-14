@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface PullRequest {
   id: number;
@@ -150,9 +151,9 @@ export default function PullRequestsPage() {
                       {pr.number}
                     </td>
                     <td className="p-4">
-                      <span className="text-text-primary font-medium">
+                      <Link href={`/pull-requests/${pr.id}`} className="text-text-primary font-medium hover:text-primary transition-colors">
                         {pr.title}
-                      </span>
+                      </Link>
                       <span className="block text-text-muted text-xs font-mono mt-0.5">
                         {pr.head_sha.substring(0, 7)}
                       </span>
