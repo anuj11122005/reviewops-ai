@@ -16,6 +16,7 @@ SUPPORTED_EXTENSIONS = {
     ".tsx",
 }
 
+
 class ValidationAgent:
     """Agent responsible for validating and filtering input data."""
 
@@ -31,7 +32,9 @@ class ValidationAgent:
         pull_number = state["pull_number"]
         files = state["files"]
         input_hash = hashlib.sha256(f"{pull_number}:{len(files)}".encode()).hexdigest()
-        logger.info(f"[ValidationAgent] Starting execution for PR {pull_number} (hash: {input_hash})")
+        logger.info(
+            f"[ValidationAgent] Starting execution for PR {pull_number} (hash: {input_hash})"
+        )
 
         try:
             valid_files = []
@@ -43,24 +46,32 @@ class ValidationAgent:
 
                 # Duplicate check
                 if filename in seen_filenames:
-                    logger.warning(f"[ValidationAgent] Duplicate file detected: {filename}")
+                    logger.warning(
+                        f"[ValidationAgent] Duplicate file detected: {filename}"
+                    )
                     continue
                 seen_filenames.add(filename)
 
                 # Integrity check
                 if not filename or content is None:
-                    logger.warning(f"[ValidationAgent] Skipping malformed file entry: {filename}")
+                    logger.warning(
+                        f"[ValidationAgent] Skipping malformed file entry: {filename}"
+                    )
                     continue
 
                 # Extension support check
                 ext = "." + filename.split(".")[-1] if "." in filename else ""
                 if ext not in SUPPORTED_EXTENSIONS:
-                    logger.debug(f"[ValidationAgent] Skipping unsupported file type: {filename}")
+                    logger.debug(
+                        f"[ValidationAgent] Skipping unsupported file type: {filename}"
+                    )
                     continue
 
                 valid_files.append(f)
 
-            logger.info(f"[ValidationAgent] Finished execution for PR {pull_number}. {len(valid_files)} valid files remaining.")
+            logger.info(
+                f"[ValidationAgent] Finished execution for PR {pull_number}. {len(valid_files)} valid files remaining."
+            )
             return {"valid_files": valid_files}
         except Exception as e:
             logger.exception(f"[ValidationAgent] Failed execution for PR {pull_number}")

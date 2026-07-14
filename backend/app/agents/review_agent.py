@@ -1,20 +1,9 @@
 """Review Agent: Orchestrates Phase 2 review process and posts to GitHub."""
 
-import asyncio
 import logging
 from typing import Any
 
-from app.agents.data_agent import DataAgent
-from app.agents.validation_agent import ValidationAgent
-from app.agents.feature_engineering_agent import FeatureEngineeringAgent
-from app.agents.embedding_agent import EmbeddingAgent
-from app.agents.bug_prediction_agent import BugPredictionAgent
 from app.agents.exceptions import AgentExecutionError
-
-from app.static_analysis.semgrep_runner import SemgrepRunner
-from app.static_analysis.bandit_runner import BanditRunner
-from app.static_analysis.pylint_runner import PylintRunner
-from app.static_analysis.eslint_runner import ESLintRunner
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +23,21 @@ class ReviewAgent:
         owner = state["owner"]
         repo = state["repo"]
         pull_number = state["pull_number"]
-        logger.info(f"[ReviewAgent] Starting review pipeline for {owner}/{repo} PR #{pull_number}")
+        logger.info(
+            f"[ReviewAgent] Starting review pipeline for {owner}/{repo} PR #{pull_number}"
+        )
 
         try:
             if not state.get("valid_files"):
-                logger.info(f"[ReviewAgent] No valid/supported files to review for PR {pull_number}.")
-                return {"final_review": {"status": "skipped", "reason": "No supported files"}}
+                logger.info(
+                    f"[ReviewAgent] No valid/supported files to review for PR {pull_number}."
+                )
+                return {
+                    "final_review": {
+                        "status": "skipped",
+                        "reason": "No supported files",
+                    }
+                }
 
             # Compile Results
             compiled_results = {
@@ -47,12 +45,14 @@ class ReviewAgent:
                 "bug_probabilities": state.get("bug_probabilities", {}),
                 "security_findings": state.get("security_findings", {}),
                 "static_analysis": state.get("static_analysis", {}),
-                "explanations": state.get("explanations", {})
+                "explanations": state.get("explanations", {}),
             }
 
             # Template and Post Comment
             comment_body = self._template_comment(compiled_results)
-            await self.github_client.post_review_comment(owner, repo, pull_number, comment_body)
+            await self.github_client.post_review_comment(
+                owner, repo, pull_number, comment_body
+            )
 
             logger.info(f"[ReviewAgent] Completed review post for PR {pull_number}")
             return {"final_review": compiled_results}
@@ -64,9 +64,9 @@ class ReviewAgent:
     def _template_comment(self, results: dict[str, Any]) -> str:
         """Create a markdown comment from the structured results."""
         lines = ["## ReviewOps AI Automated Review\n"]
-        
+
         explanations = results.get("explanations", {})
-        
+
         if explanations.get("summary"):
             lines.append("### Summary")
             lines.append(explanations["summary"])
@@ -81,10 +81,10 @@ class ReviewAgent:
                 lines.append(f"| `{filename}` | {prob:.1%} |")
         else:
             lines.append("No bug probability data available.")
-            
+
         lines.append("\n### Static Analysis")
         static_analysis = results.get("static_analysis", {})
-        
+
         has_issues = False
         for tool_name, tool_data in static_analysis.items():
             if tool_data.get("status") == "success" and tool_data.get("issues"):
@@ -95,14 +95,14 @@ class ReviewAgent:
                     line = issue.get("line") or issue.get("line_number") or ""
                     msg = issue.get("message") or issue.get("issue_text") or "issue"
                     lines.append(f"- `{path}:{line}`: {msg}")
-                    
+
             elif tool_data.get("status") == "error":
                 lines.append(f"\n**{tool_name} Error:**")
                 lines.append(f"- {tool_data.get('error', 'Unknown error')}")
-                
+
         if not has_issues:
             lines.append("\nNo static analysis issues found.")
-            
+
         lines.append("\n### Security Findings")
         security = results.get("security_findings", {})
         if security:
@@ -113,5 +113,5 @@ class ReviewAgent:
                         lines.append(f"- {iss}")
         else:
             lines.append("\nNo security issues found.")
-        
+
         return "\n".join(lines)

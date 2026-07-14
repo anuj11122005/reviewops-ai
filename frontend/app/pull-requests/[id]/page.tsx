@@ -21,14 +21,33 @@ interface PullRequest {
   updated_at: string;
 }
 
+interface StaticAnalysisIssue {
+  path?: string;
+  filename?: string;
+  line?: number;
+  line_number?: number;
+  message?: string;
+  issue_text?: string;
+}
+
+interface StaticAnalysisData {
+  status: string;
+  error?: string;
+  issues?: StaticAnalysisIssue[];
+}
+
+interface ExplainabilityData {
+  summary?: string;
+}
+
 interface ReviewResult {
   id: number;
   pull_request_id: number;
   status: string;
   bug_prediction_results: Record<string, number> | null;
-  static_analysis_results: Record<string, any> | null;
-  security_results: Record<string, any> | null;
-  explainability_results: Record<string, any> | null;
+  static_analysis_results: Record<string, StaticAnalysisData> | null;
+  security_results: Record<string, string[]> | null;
+  explainability_results: ExplainabilityData | null;
   created_at: string;
   updated_at: string;
 }
@@ -92,8 +111,8 @@ export default function PullRequestDetailPage() {
         } else if (revRes.status !== 404) {
             console.error(`HTTP ${revRes.status} fetching review`);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -237,7 +256,7 @@ export default function PullRequestDetailPage() {
                         <div>
                             <h3 className="text-sm font-medium text-text-primary mb-3">Static Analysis</h3>
                             <div className="space-y-4">
-                                {Object.entries(review.static_analysis_results).map(([tool, data]: [string, any]) => (
+                                {Object.entries(review.static_analysis_results).map(([tool, data]) => (
                                     <div key={tool} className="border border-border rounded-lg p-4">
                                         <div className="flex items-center justify-between mb-2">
                                             <h4 className="font-medium text-text-primary">{tool}</h4>
@@ -250,9 +269,9 @@ export default function PullRequestDetailPage() {
                                             </span>
                                         </div>
                                         
-                                        {data.status === 'success' && data.issues?.length > 0 ? (
+                                        {data.status === 'success' && data.issues && data.issues.length > 0 ? (
                                             <ul className="space-y-2 mt-3">
-                                                {data.issues.map((issue: any, idx: number) => (
+                                                {data.issues.map((issue, idx: number) => (
                                                     <li key={idx} className="text-sm bg-surface-elevated/30 p-3 rounded-md">
                                                         <div className="font-mono text-xs text-text-muted mb-1">
                                                             {issue.path || issue.filename}:{issue.line || issue.line_number || "?"}

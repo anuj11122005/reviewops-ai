@@ -33,7 +33,8 @@ class BanditRunner(StaticAnalysisRunner):
                     "bandit",
                     "-r",
                     str(temp_path),
-                    "-f", "json",
+                    "-f",
+                    "json",
                 ]
 
                 process = await asyncio.create_subprocess_exec(
@@ -42,24 +43,38 @@ class BanditRunner(StaticAnalysisRunner):
                     stderr=asyncio.subprocess.PIPE,
                 )
                 stdout, stderr = await process.communicate()
-                
+
                 # Bandit exits with 1 if issues are found, which is normal.
                 if process.returncode not in (0, 1):
-                    logger.warning(f"[BanditRunner] Failed with code {process.returncode}. Stderr: {stderr.decode()}")
-                    return {"tool": "bandit", "status": "error", "error": "Bandit execution failed"}
-                
+                    logger.warning(
+                        f"[BanditRunner] Failed with code {process.returncode}. Stderr: {stderr.decode()}"
+                    )
+                    return {
+                        "tool": "bandit",
+                        "status": "error",
+                        "error": "Bandit execution failed",
+                    }
+
                 try:
                     results = json.loads(stdout.decode())
                     issues = results.get("results", [])
                     # Clean up file paths
                     for issue in issues:
-                        issue["filename"] = str(Path(issue["filename"]).relative_to(temp_path)).replace("\\", "/")
-                        
+                        issue["filename"] = str(
+                            Path(issue["filename"]).relative_to(temp_path)
+                        ).replace("\\", "/")
+
                     return {"tool": "bandit", "status": "success", "issues": issues}
                 except json.JSONDecodeError:
-                    logger.warning(f"[BanditRunner] Invalid JSON output from Bandit: {stdout.decode()}")
-                    return {"tool": "bandit", "status": "error", "error": "Failed to parse JSON output"}
-                
+                    logger.warning(
+                        f"[BanditRunner] Invalid JSON output from Bandit: {stdout.decode()}"
+                    )
+                    return {
+                        "tool": "bandit",
+                        "status": "error",
+                        "error": "Failed to parse JSON output",
+                    }
+
         except Exception as e:
             logger.exception(f"[BanditRunner] Crashed during execution: {e}")
             return {"tool": "bandit", "status": "error", "error": str(e)}

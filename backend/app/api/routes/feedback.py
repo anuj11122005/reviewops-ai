@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -28,23 +28,24 @@ def submit_feedback(
     db.add(feedback)
     db.commit()
     db.refresh(feedback)
-    
+
     logger.info(
         f"Feedback recorded: PR {feedback.pull_request_id}, "
         f"Category: {feedback.category}, Accepted: {feedback.accepted}"
     )
     return FeedbackResponse.model_validate(feedback)
 
+
 @router.get("/stats", response_model=dict[str, Any])
 def get_feedback_stats(db: Session = Depends(get_db)) -> Any:
     """Get overall feedback statistics."""
     total = db.query(Feedback).count()
-    accepted = db.query(Feedback).filter(Feedback.accepted == True).count()
+    accepted = db.query(Feedback).filter(Feedback.accepted).count()
     rejected = total - accepted
-    
+
     return {
         "total": total,
         "accepted": accepted,
         "rejected": rejected,
-        "acceptance_rate": (accepted / total) if total > 0 else 0.0
+        "acceptance_rate": (accepted / total) if total > 0 else 0.0,
     }

@@ -77,9 +77,10 @@ def get_pull_request_review(
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Return the review results for a PR."""
-    from app.db.models.review import Review
     from fastapi import HTTPException
-    
+
+    from app.db.models.review import Review
+
     review = db.query(Review).filter(Review.pull_request_id == pr_id).first()
     if review is None:
         raise HTTPException(
@@ -91,7 +92,7 @@ def get_pull_request_review(
                 }
             },
         )
-    
+
     return {
         "id": review.id,
         "pull_request_id": review.pull_request_id,

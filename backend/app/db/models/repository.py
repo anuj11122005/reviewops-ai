@@ -1,9 +1,14 @@
 """Repository ORM model — a GitHub repository connected to ReviewOps AI."""
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy import BigInteger, Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.db.models.pull_request import PullRequest
 
 
 class Repository(TimestampMixin, Base):

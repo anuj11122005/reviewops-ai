@@ -5,7 +5,7 @@ import logging
 from typing import Any
 
 from qdrant_client import AsyncQdrantClient
-from qdrant_client.http.models import PointStruct, VectorParams, Distance
+from qdrant_client.http.models import Distance, PointStruct, VectorParams
 
 from app.agents.exceptions import AgentExecutionError
 from app.core.config import get_settings
@@ -43,19 +43,25 @@ class EmbeddingAgent:
         """
         pull_number = state["pull_number"]
         valid_files = state["valid_files"]
-        input_hash = hashlib.sha256(f"{pull_number}:{len(valid_files)}".encode()).hexdigest()
-        logger.info(f"[EmbeddingAgent] Starting execution for PR {pull_number} (hash: {input_hash})")
+        input_hash = hashlib.sha256(
+            f"{pull_number}:{len(valid_files)}".encode()
+        ).hexdigest()
+        logger.info(
+            f"[EmbeddingAgent] Starting execution for PR {pull_number} (hash: {input_hash})"
+        )
 
         if not valid_files:
             return {}
 
         try:
             await self._ensure_collection()
-            
+
             texts = [f["content"][:1000] for f in valid_files]
             embeddings = await self.gateway.get_embeddings(texts)
             if not embeddings:
-                logger.warning(f"[EmbeddingAgent] Failed to retrieve embeddings for PR {pull_number}")
+                logger.warning(
+                    f"[EmbeddingAgent] Failed to retrieve embeddings for PR {pull_number}"
+                )
                 return {}
 
             points = []
@@ -64,19 +70,15 @@ class EmbeddingAgent:
                     PointStruct(
                         id=idx + int(input_hash[:8], 16),
                         vector=emb,
-                        payload={
-                            "pr_id": pull_number,
-                            "filename": f["filename"]
-                        }
+                        payload={"pr_id": pull_number, "filename": f["filename"]},
                     )
                 )
-            
+
             if points:
                 await self.qdrant.upsert(
-                    collection_name=self.collection_name,
-                    points=points
+                    collection_name=self.collection_name, points=points
                 )
-            
+
             logger.info(f"[EmbeddingAgent] Finished execution for PR {pull_number}.")
             return {}
 

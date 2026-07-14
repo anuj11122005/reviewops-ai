@@ -11,10 +11,17 @@ logger = logging.getLogger(__name__)
 
 # Basic heuristics for demonstration
 PATTERNS = {
-    "sql_injection": re.compile(r"(SELECT|INSERT|UPDATE|DELETE|DROP).*?(?:'|\").*?(?:\%s|\%d|\{\})", re.IGNORECASE),
+    "sql_injection": re.compile(
+        r"(SELECT|INSERT|UPDATE|DELETE|DROP).*?(?:'|\").*?(?:\%s|\%d|\{\})",
+        re.IGNORECASE,
+    ),
     "xss": re.compile(r"(innerHTML|document\.write\(|eval\().*?\+.*?"),
-    "hardcoded_secret": re.compile(r"(?i)(password|secret|api_key|token)\s*[:=]\s*(['\"])[a-zA-Z0-9_\-]{8,}\2"),
-    "dangerous_system_call": re.compile(r"(os\.system\(|subprocess\.(Popen|call|run|check_output)\(.*?(shell=True))"),
+    "hardcoded_secret": re.compile(
+        r"(?i)(password|secret|api_key|token)\s*[:=]\s*(['\"])[a-zA-Z0-9_\-]{8,}\2"
+    ),
+    "dangerous_system_call": re.compile(
+        r"(os\.system\(|subprocess\.(Popen|call|run|check_output)\(.*?(shell=True))"
+    ),
 }
 
 
@@ -32,8 +39,12 @@ class SecurityAgent:
         """
         pull_number = state["pull_number"]
         valid_files = state["valid_files"]
-        input_hash = hashlib.sha256(f"{pull_number}:{len(valid_files)}".encode()).hexdigest()
-        logger.info(f"[SecurityAgent] Starting execution for PR {pull_number} (hash: {input_hash})")
+        input_hash = hashlib.sha256(
+            f"{pull_number}:{len(valid_files)}".encode()
+        ).hexdigest()
+        logger.info(
+            f"[SecurityAgent] Starting execution for PR {pull_number} (hash: {input_hash})"
+        )
 
         try:
             findings: dict[str, list[str]] = {}
@@ -47,7 +58,9 @@ class SecurityAgent:
                 for line_idx, line in enumerate(content.split("\n")):
                     for category, pattern in PATTERNS.items():
                         if pattern.search(line):
-                            file_findings.append(f"{category} detected at line {line_idx + 1}")
+                            file_findings.append(
+                                f"{category} detected at line {line_idx + 1}"
+                            )
 
                 if file_findings:
                     findings[filename] = file_findings

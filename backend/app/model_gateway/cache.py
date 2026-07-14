@@ -10,6 +10,7 @@ from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+
 class ModelCache:
     """Redis cache for model predictions to prevent duplicate external API calls."""
 
@@ -34,4 +35,3 @@ class ModelCache:
             await self.redis.set(key, json.dumps(value), ex=self.ttl)
         except Exception:
             logger.exception(f"Failed to write to cache for key: {key}")
-

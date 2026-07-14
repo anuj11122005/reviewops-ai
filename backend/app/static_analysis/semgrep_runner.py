@@ -31,7 +31,8 @@ class SemgrepRunner(StaticAnalysisRunner):
                 cmd = [
                     "semgrep",
                     "scan",
-                    "--config", "auto",
+                    "--config",
+                    "auto",
                     "--json",
                     "--quiet",
                     str(temp_path),
@@ -43,23 +44,37 @@ class SemgrepRunner(StaticAnalysisRunner):
                     stderr=asyncio.subprocess.PIPE,
                 )
                 stdout, stderr = await process.communicate()
-                
+
                 if process.returncode not in (0, 1):
-                    logger.warning(f"[SemgrepRunner] Failed with code {process.returncode}. Stderr: {stderr.decode()}")
-                    return {"tool": "semgrep", "status": "error", "error": "Semgrep execution failed"}
-                
+                    logger.warning(
+                        f"[SemgrepRunner] Failed with code {process.returncode}. Stderr: {stderr.decode()}"
+                    )
+                    return {
+                        "tool": "semgrep",
+                        "status": "error",
+                        "error": "Semgrep execution failed",
+                    }
+
                 try:
                     results = json.loads(stdout.decode())
                     issues = results.get("results", [])
                     # Clean up file paths
                     for issue in issues:
-                        issue["path"] = str(Path(issue["path"]).relative_to(temp_path)).replace("\\", "/")
-                        
+                        issue["path"] = str(
+                            Path(issue["path"]).relative_to(temp_path)
+                        ).replace("\\", "/")
+
                     return {"tool": "semgrep", "status": "success", "issues": issues}
                 except json.JSONDecodeError:
-                    logger.warning(f"[SemgrepRunner] Invalid JSON output from Semgrep: {stdout.decode()}")
-                    return {"tool": "semgrep", "status": "error", "error": "Failed to parse JSON output"}
-                
+                    logger.warning(
+                        f"[SemgrepRunner] Invalid JSON output from Semgrep: {stdout.decode()}"
+                    )
+                    return {
+                        "tool": "semgrep",
+                        "status": "error",
+                        "error": "Failed to parse JSON output",
+                    }
+
         except Exception as e:
             logger.exception(f"[SemgrepRunner] Crashed during execution: {e}")
             return {"tool": "semgrep", "status": "error", "error": str(e)}

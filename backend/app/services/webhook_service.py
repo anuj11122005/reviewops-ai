@@ -129,11 +129,15 @@ def upsert_pull_request(
     return pr
 
 
-async def run_review_agent_task(owner: str, repo: str, pull_number: int, pr_id: int) -> None:
+async def run_review_agent_task(
+    owner: str, repo: str, pull_number: int, pr_id: int
+) -> None:
     """Run the LangGraph Review pipeline and update the Review model."""
-    from app.api.deps import get_db_session
-    from app.orchestrator.graph import build_review_graph
+    from contextlib import contextmanager
+
     from app.db.models.review import Review
+    from app.db.session import get_db
+    from app.orchestrator.graph import build_review_graph
 
     try:
         graph = build_review_graph()
@@ -141,18 +145,18 @@ async def run_review_agent_task(owner: str, repo: str, pull_number: int, pr_id: 
             "owner": owner,
             "repo": repo,
             "pull_number": pull_number,
-            "pr_id": pr_id
+            "pr_id": pr_id,
         }
-        
+
         results = await graph.ainvoke(initial_state)
-        
+
         # Save results to db
-        with get_db_session() as db:
+        with contextmanager(get_db)() as db:
             review = db.query(Review).filter(Review.pull_request_id == pr_id).first()
             if not review:
                 review = Review(pull_request_id=pr_id)
                 db.add(review)
-                
+
             if results.get("error"):
                 review.status = "error"
             else:
@@ -165,7 +169,10 @@ async def run_review_agent_task(owner: str, repo: str, pull_number: int, pr_id: 
             db.commit()
     except Exception as e:
         logger.exception(f"Review pipeline failed for PR {pull_number}: {e}")
-        with get_db_session() as db:
+        from contextlib import contextmanager
+
+        from app.db.session import get_db
+        with contextmanager(get_db)() as db:
             review = db.query(Review).filter(Review.pull_request_id == pr_id).first()
             if not review:
                 review = Review(pull_request_id=pr_id)
@@ -189,7 +196,7 @@ def process_pull_request_event(
         pr = upsert_pull_request(db, payload, repository)
         db.commit()
         db.refresh(pr)
-        
+
         # Enqueue the ReviewAgent task
         background_tasks.add_task(
             run_review_agent_task,
@@ -198,7 +205,7 @@ def process_pull_request_event(
             pr.number,
             pr.id,
         )
-        
+
         return pr
     except Exception:
         db.rollback()

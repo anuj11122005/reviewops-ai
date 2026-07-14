@@ -33,7 +33,7 @@ class PylintRunner(StaticAnalysisRunner):
                     "pylint",
                     str(temp_path),
                     "--output-format=json",
-                    "--exit-zero", # don't fail the subprocess if issues are found
+                    "--exit-zero",  # don't fail the subprocess if issues are found
                 ]
 
                 process = await asyncio.create_subprocess_exec(
@@ -42,22 +42,30 @@ class PylintRunner(StaticAnalysisRunner):
                     stderr=asyncio.subprocess.PIPE,
                 )
                 stdout, stderr = await process.communicate()
-                
+
                 try:
                     # Pylint output might be empty if no issues
                     if not stdout.strip():
                         return {"tool": "pylint", "status": "success", "issues": []}
-                        
+
                     issues = json.loads(stdout.decode())
                     # Clean up file paths
                     for issue in issues:
-                        issue["path"] = str(Path(issue["path"]).relative_to(temp_path)).replace("\\", "/")
-                        
+                        issue["path"] = str(
+                            Path(issue["path"]).relative_to(temp_path)
+                        ).replace("\\", "/")
+
                     return {"tool": "pylint", "status": "success", "issues": issues}
                 except json.JSONDecodeError:
-                    logger.warning(f"[PylintRunner] Invalid JSON output from Pylint: {stdout.decode()}")
-                    return {"tool": "pylint", "status": "error", "error": "Failed to parse JSON output"}
-                
+                    logger.warning(
+                        f"[PylintRunner] Invalid JSON output from Pylint: {stdout.decode()}"
+                    )
+                    return {
+                        "tool": "pylint",
+                        "status": "error",
+                        "error": "Failed to parse JSON output",
+                    }
+
         except Exception as e:
             logger.exception(f"[PylintRunner] Crashed during execution: {e}")
             return {"tool": "pylint", "status": "error", "error": str(e)}

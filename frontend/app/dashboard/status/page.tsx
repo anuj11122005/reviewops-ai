@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type PRAgentStatus = {
   id: string;
@@ -15,7 +15,7 @@ export default function AgentStatusPage() {
   // that tracks the status of the LangGraph orchestrator runs.
   // For the dashboard, we will render a static/mock view as requested for Phase 3
   
-  const [statuses, setStatuses] = useState<PRAgentStatus[]>([
+  const [statuses] = useState<PRAgentStatus[]>([
     {
       id: "run_123",
       pull_number: 142,

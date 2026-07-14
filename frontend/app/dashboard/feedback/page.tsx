@@ -11,10 +11,10 @@ type FeedbackStats = {
 
 export default function FeedbackPage() {
   const [stats, setStats] = useState<FeedbackStats>({
-    total: 0,
-    accepted: 0,
-    rejected: 0,
-    acceptance_rate: 0,
+    total: 42,
+    accepted: 31,
+    rejected: 11,
+    acceptance_rate: 0.738,
   });
 
   useEffect(() => {
@@ -22,14 +22,6 @@ export default function FeedbackPage() {
     // fetch("http://localhost:8000/api/feedback/stats")
     //   .then(res => res.json())
     //   .then(data => setStats(data));
-    
-    // Mock data for Phase 3 dashboard implementation
-    setStats({
-      total: 42,
-      accepted: 31,
-      rejected: 11,
-      acceptance_rate: 0.738,
-    });
   }, []);
 
   return (
@@ -73,19 +65,19 @@ export default function FeedbackPage() {
               <td className="px-6 py-4 font-medium text-gray-900">#142</td>
               <td className="px-6 py-4">Security: SQL Injection</td>
               <td className="px-6 py-4 text-green-600 font-medium">Accepted</td>
-              <td className="px-6 py-4">"Good catch on the unparameterized query."</td>
+              <td className="px-6 py-4">&quot;Good catch on the unparameterized query.&quot;</td>
             </tr>
             <tr className="border-b">
               <td className="px-6 py-4 font-medium text-gray-900">#140</td>
               <td className="px-6 py-4">Bug Prediction</td>
               <td className="px-6 py-4 text-red-600 font-medium">Rejected</td>
-              <td className="px-6 py-4">"False positive, this code path is unreachable."</td>
+              <td className="px-6 py-4">&quot;False positive, this code path is unreachable.&quot;</td>
             </tr>
             <tr>
               <td className="px-6 py-4 font-medium text-gray-900">#139</td>
               <td className="px-6 py-4">Security: Hardcoded Secret</td>
               <td className="px-6 py-4 text-green-600 font-medium">Accepted</td>
-              <td className="px-6 py-4">"Forgot to remove the test token."</td>
+              <td className="px-6 py-4">&quot;Forgot to remove the test token.&quot;</td>
             </tr>
           </tbody>
         </table>

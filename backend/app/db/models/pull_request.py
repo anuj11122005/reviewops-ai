@@ -1,11 +1,17 @@
 """PullRequest ORM model — a PR received via GitHub webhook."""
 
 import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.db.models.feedback import Feedback
+    from app.db.models.repository import Repository
+    from app.db.models.review import Review
 
 
 class PullRequest(TimestampMixin, Base):
