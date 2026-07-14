@@ -80,10 +80,12 @@ def client() -> Generator[TestClient, None, None]:
     app.dependency_overrides[get_settings] = _get_test_settings
 
     # Patch the cached get_settings so lifespan's init_engine uses test settings.
-    with patch("app.core.config.get_settings", return_value=_test_settings):
-        with patch("app.db.session.get_settings", return_value=_test_settings):
-            with TestClient(app, raise_server_exceptions=False) as c:
-                yield c
+    with (
+        patch("app.core.config.get_settings", return_value=_test_settings),
+        patch("app.db.session.get_settings", return_value=_test_settings),
+        TestClient(app, raise_server_exceptions=False) as c,
+    ):
+        yield c
 
     app.dependency_overrides.clear()
 
