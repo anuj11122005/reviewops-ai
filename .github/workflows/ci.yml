@@ -73,7 +73,7 @@ jobs:
         run: npm ci
 
       - name: "[Gate 4a] ESLint"
-        run: npx next lint
+        run: npm run lint
 
       - name: "[Gate 4b] TypeScript — type check"
         run: npx tsc --noEmit
