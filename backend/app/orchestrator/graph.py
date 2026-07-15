@@ -19,6 +19,11 @@ def build_review_graph() -> Any:
     from app.agents.review_agent import ReviewAgent
     from app.agents.security_agent import SecurityAgent
     from app.agents.validation_agent import ValidationAgent
+    from app.agents.documentation_agent import DocumentationAgent
+    from app.agents.test_generation_agent import TestGenerationAgent
+    from app.agents.reviewer_recommendation_agent import ReviewerRecommendationAgent
+    from app.agents.deployment_agent import DeploymentAgent
+    
     from app.api.deps import get_settings
     from app.integrations.github_client import GitHubClient
     from app.model_gateway.gateway import ModelGateway
@@ -35,8 +40,14 @@ def build_review_graph() -> Any:
     bug_agent = BugPredictionAgent()
     security_agent = SecurityAgent()
     explainability_agent = ExplainabilityAgent(model_gateway)
-    review_agent = ReviewAgent(github_client)
     monitoring_agent = MonitoringAgent()
+    
+    docs_agent = DocumentationAgent(model_gateway)
+    test_agent = TestGenerationAgent(model_gateway)
+    reviewer_agent = ReviewerRecommendationAgent(github_client)
+    deployment_agent = DeploymentAgent()
+    
+    review_agent = ReviewAgent(github_client)
 
     # Node functions
     async def node_data(state: Any) -> dict[str, Any]:
@@ -92,14 +103,28 @@ def build_review_graph() -> Any:
         return {"static_analysis": static_results}
 
     async def node_explainability(state: Any) -> dict[str, Any]:
-        logger.info(
-            f"[Graph] ExplainabilityAgent running for PR {state['pull_number']}"
-        )
+        logger.info(f"[Graph] ExplainabilityAgent running for PR {state['pull_number']}")
         return await explainability_agent.execute(state)
+        
+    async def node_documentation(state: Any) -> dict[str, Any]:
+        logger.info(f"[Graph] DocumentationAgent running for PR {state['pull_number']}")
+        return await docs_agent.execute(state)
+        
+    async def node_test_generation(state: Any) -> dict[str, Any]:
+        logger.info(f"[Graph] TestGenerationAgent running for PR {state['pull_number']}")
+        return await test_agent.execute(state)
+        
+    async def node_reviewer_recommendation(state: Any) -> dict[str, Any]:
+        logger.info(f"[Graph] ReviewerRecommendationAgent running for PR {state['pull_number']}")
+        return await reviewer_agent.execute(state)
 
     async def node_monitoring(state: Any) -> dict[str, Any]:
         logger.info(f"[Graph] MonitoringAgent running for PR {state['pull_number']}")
         return await monitoring_agent.execute(state)
+        
+    async def node_deployment(state: Any) -> dict[str, Any]:
+        logger.info(f"[Graph] DeploymentAgent running for PR {state.get('pull_number', 0)}")
+        return await deployment_agent.execute(state)
 
     async def node_review(state: Any) -> dict[str, Any]:
         logger.info(f"[Graph] ReviewAgent running for PR {state['pull_number']}")
@@ -123,6 +148,13 @@ def build_review_graph() -> Any:
     builder.add_node("node_security", node_security)
     builder.add_node("node_static_analysis", node_static_analysis)
     builder.add_node("node_explainability", node_explainability)
+    
+    # Phase 4 nodes
+    builder.add_node("node_documentation", node_documentation)
+    builder.add_node("node_test_generation", node_test_generation)
+    builder.add_node("node_reviewer_recommendation", node_reviewer_recommendation)
+    builder.add_node("node_deployment", node_deployment)
+    
     builder.add_node("node_monitoring", node_monitoring)
     builder.add_node("node_review", node_review)
 
@@ -135,14 +167,20 @@ def build_review_graph() -> Any:
         {"node_features": "node_features", "node_review": "node_review"},
     )
 
-    # We can run these sequentially for simplicity
+    # Sequential flow for simplicity
     builder.add_edge("node_features", "node_embedding")
     builder.add_edge("node_embedding", "node_bug_prediction")
     builder.add_edge("node_bug_prediction", "node_security")
     builder.add_edge("node_security", "node_static_analysis")
     builder.add_edge("node_static_analysis", "node_explainability")
-    builder.add_edge("node_explainability", "node_monitoring")
-    builder.add_edge("node_monitoring", "node_review")
+    
+    builder.add_edge("node_explainability", "node_documentation")
+    builder.add_edge("node_documentation", "node_test_generation")
+    builder.add_edge("node_test_generation", "node_reviewer_recommendation")
+    builder.add_edge("node_reviewer_recommendation", "node_monitoring")
+    
+    builder.add_edge("node_monitoring", "node_deployment")
+    builder.add_edge("node_deployment", "node_review")
     builder.add_edge("node_review", END)
 
     return builder.compile()

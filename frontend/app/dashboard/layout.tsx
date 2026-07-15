@@ -22,7 +22,16 @@ export default function DashboardLayout({
             </li>
             <li>
               <Link
-                href="/dashboard/monitoring"
+                href="/models"
+                className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+              >
+                <Activity className="w-5 h-5 text-gray-500" />
+                <span className="ml-3">Model Registry</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/monitoring"
                 className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
               >
                 <Activity className="w-5 h-5 text-gray-500" />
@@ -36,6 +45,15 @@ export default function DashboardLayout({
               >
                 <MessageSquare className="w-5 h-5 text-gray-500" />
                 <span className="ml-3">Feedback</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/settings"
+                className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100"
+              >
+                <MessageSquare className="w-5 h-5 text-gray-500" />
+                <span className="ml-3">Settings</span>
               </Link>
             </li>
           </ul>

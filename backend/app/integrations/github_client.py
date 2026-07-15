@@ -85,3 +85,22 @@ class GitHubClient:
         async with httpx.AsyncClient(headers=self.headers) as client:
             response = await client.post(url, json={"body": body})
             response.raise_for_status()
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type((httpx.RequestError, httpx.HTTPStatusError)),
+        reraise=True,
+    )
+    async def get_file_commits(
+        self, owner: str, repo: str, file_path: str
+    ) -> list[dict[str, Any]]:
+        """Fetch the commit history for a specific file to determine authorship."""
+        url = f"https://api.github.com/repos/{owner}/{repo}/commits"
+        params = {"path": file_path, "per_page": 100}
+        logger.info(f"Fetching commit history for {file_path} from {url}")
+
+        async with httpx.AsyncClient(headers=self.headers) as client:
+            response = await client.get(url, params=params)
+            response.raise_for_status()
+            return response.json()  # type: ignore
