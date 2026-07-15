@@ -30,6 +30,12 @@ class ReviewState(TypedDict, total=False):
     # Explainability output
     explanations: dict[str, str]
 
+    # New Agent outputs
+    documentation: dict[str, str]
+    test_suggestions: str
+    recommended_reviewer: str
+    deployment_status: str
+
     # Final combined output
     final_review: dict[str, Any]
 

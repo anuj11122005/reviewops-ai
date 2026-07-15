@@ -231,3 +231,8 @@ reviewops-ai/
 - **Model Gateway as a single choke point**: agents never call Hugging Face directly. This isolates model routing, caching, versioning, and fallback logic, so swapping/upgrading models doesn't touch agent code.
 - **LangGraph for orchestration**: gives explicit, inspectable state transitions between agents instead of ad-hoc function chaining.
 - **Static analysis + ML + LLM as three distinct layers**: deterministic checks are never replaced by probabilistic ones — they run alongside each other, and outputs are merged by the Review Agent.
+
+## 7. Phase 4 Deviations
+- **Model Registry Database**: Instead of duplicating `MLModel` and `MLDeployment` records into the PostgreSQL database using SQLAlchemy, the `models.py` API route and `DeploymentAgent` interface directly with `mlflow.client.MlflowClient`. This avoids maintaining state in two places and relies on MLflow as the source of truth.
+- **Frontend Dashboard**: Components were implemented manually using Tailwind CSS for Phases 1-3, and Shadcn UI was introduced in Phase 4 via CLI (`npx shadcn@latest init`).
+- **Kubernetes**: Exploratory K8s manifests added to `infra/k8s/` are standard boilerplate and not actively deployed since we are currently running on Docker Compose.

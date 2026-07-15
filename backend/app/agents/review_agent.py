@@ -46,6 +46,10 @@ class ReviewAgent:
                 "security_findings": state.get("security_findings", {}),
                 "static_analysis": state.get("static_analysis", {}),
                 "explanations": state.get("explanations", {}),
+                "documentation": state.get("documentation", {}),
+                "test_suggestions": state.get("test_suggestions", ""),
+                "recommended_reviewer": state.get("recommended_reviewer", ""),
+                "deployment_status": state.get("deployment_status", ""),
             }
 
             # Template and Post Comment
@@ -113,5 +117,25 @@ class ReviewAgent:
                         lines.append(f"- {iss}")
         else:
             lines.append("\nNo security issues found.")
+
+        docs = results.get("documentation", {})
+        if docs and docs.get("pr_summary"):
+            lines.append("\n### PR Summary & Release Notes")
+            lines.append(docs["pr_summary"])
+
+        tests = results.get("test_suggestions", "")
+        if tests:
+            lines.append("\n### Test Suggestions")
+            lines.append(tests)
+
+        reviewer = results.get("recommended_reviewer", "")
+        if reviewer:
+            lines.append("\n### Reviewer Recommendation")
+            lines.append(reviewer)
+
+        deployment = results.get("deployment_status", "")
+        if deployment:
+            lines.append("\n### Model Deployment Status")
+            lines.append(deployment)
 
         return "\n".join(lines)
