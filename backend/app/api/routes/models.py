@@ -46,7 +46,7 @@ def list_models() -> dict[str, Any]:
         return {"models": models_data}
     except Exception as e:
         logger.exception("Failed to fetch models from MLflow")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/{model_name}/versions/{version}/promote")
@@ -68,7 +68,7 @@ def promote_model(model_name: str, version: str) -> dict[str, str]:
         }
     except Exception as e:
         logger.exception(f"Failed to promote model {model_name} v{version}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/{model_name}/versions/{version}/rollback")
@@ -84,4 +84,4 @@ def rollback_model(model_name: str, version: str) -> dict[str, str]:
         return {"status": "success", "message": f"Archived {model_name} v{version}."}
     except Exception as e:
         logger.exception(f"Failed to rollback model {model_name} v{version}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
