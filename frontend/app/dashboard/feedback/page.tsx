@@ -10,7 +10,7 @@ type FeedbackStats = {
 };
 
 export default function FeedbackPage() {
-  const [stats, setStats] = useState<FeedbackStats>({
+  const [stats] = useState<FeedbackStats>({
     total: 42,
     accepted: 31,
     rejected: 11,

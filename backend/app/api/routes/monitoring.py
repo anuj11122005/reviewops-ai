@@ -1,10 +1,10 @@
 """API routes for System Monitoring and Drift Detection."""
 
 import logging
+import random
 from typing import Any
 
 from fastapi import APIRouter
-import random
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ def get_metrics() -> dict[str, Any]:
         "drift_report": {
             "data_drift_detected": False,
             "concept_drift_detected": False,
-            "drift_score": random.uniform(0.01, 0.05), # Simulate a low score
-            "features_drifted": []
+            "drift_score": random.uniform(0.01, 0.05),  # Simulate a low score
+            "features_drifted": [],
         },
-        "prediction_accuracy": 0.82
+        "prediction_accuracy": 0.82,
     }

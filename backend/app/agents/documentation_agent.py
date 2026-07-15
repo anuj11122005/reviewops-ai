@@ -37,11 +37,11 @@ class DocumentationAgent:
 
         try:
             # We don't have the full diff strings by default in valid_files,
-            # but we assume the agent can summarize based on filenames or a mock representation 
+            # but we assume the agent can summarize based on filenames or a mock representation
             # if diff isn't fully available, or we use a basic prompt.
             # In a real scenario, we'd fetch the diff using GitHubClient.
             files_list = [f.get("filename", "") for f in valid_files]
-            
+
             prompt = (
                 f"You are an AI technical writer. Generate a concise PR summary and release notes "
                 f"based on the following modified files:\n"
@@ -53,7 +53,11 @@ class DocumentationAgent:
             generated_doc = await self.gateway.generate_text(prompt)
 
             documentation = {
-                "pr_summary": generated_doc if generated_doc else "Could not generate documentation."
+                "pr_summary": (
+                    generated_doc
+                    if generated_doc
+                    else "Could not generate documentation."
+                )
             }
 
             logger.info(

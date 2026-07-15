@@ -5,6 +5,7 @@ from typing import Any
 
 import mlflow
 from mlflow.client import MlflowClient
+
 from app.agents.exceptions import AgentExecutionError
 
 logger = logging.getLogger(__name__)
@@ -29,9 +30,11 @@ class DeploymentAgent:
         try:
             # We look for the 'BugPredictor' registered model
             model_name = "BugPredictor"
-            
+
             try:
-                latest_versions = self.client.get_latest_versions(model_name, stages=["None", "Staging"])
+                latest_versions = self.client.get_latest_versions(
+                    model_name, stages=["None", "Staging"]
+                )
             except mlflow.exceptions.RestException:
                 return {"deployment_status": "No registered models found."}
 
@@ -40,16 +43,16 @@ class DeploymentAgent:
 
             candidate = latest_versions[0]
             run_id = candidate.run_id
-            
+
             # Fetch metrics for the candidate
             run = self.client.get_run(run_id)
             metrics = run.data.metrics
-            
+
             accuracy = metrics.get("accuracy", 0.0)
-            
+
             # Canary logic: we require accuracy >= 0.70 for promotion to Production
             baseline_accuracy = 0.70
-            
+
             if accuracy >= baseline_accuracy:
                 # Promote to production
                 self.client.transition_model_version_stage(
@@ -64,7 +67,7 @@ class DeploymentAgent:
                 # Rollback / Reject
                 status = f"Rollback: version {candidate.version} rejected. Accuracy {accuracy:.2f} < baseline {baseline_accuracy}."
                 logger.warning(f"[DeploymentAgent] {status}")
-            
+
             return {"deployment_status": status}
 
         except Exception as e:

@@ -97,7 +97,7 @@ class GitHubClient:
     ) -> list[dict[str, Any]]:
         """Fetch the commit history for a specific file to determine authorship."""
         url = f"https://api.github.com/repos/{owner}/{repo}/commits"
-        params = {"path": file_path, "per_page": 100}
+        params: dict[str, str | int] = {"path": file_path, "per_page": 100}
         logger.info(f"Fetching commit history for {file_path} from {url}")
 
         async with httpx.AsyncClient(headers=self.headers) as client:

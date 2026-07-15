@@ -5,8 +5,22 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+type ModelVersion = {
+  version: string;
+  stage: string;
+  metrics?: {
+    accuracy?: number;
+    precision?: number;
+  };
+};
+
+type ModelData = {
+  name: string;
+  latest_versions?: ModelVersion[];
+};
+
 export default function ModelsPage() {
-  const [models, setModels] = useState<any[]>([]);
+  const [models, setModels] = useState<ModelData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,7 +60,7 @@ export default function ModelsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {model.latest_versions?.map((v: any, vIdx: number) => (
+              {model.latest_versions?.map((v: ModelVersion, vIdx: number) => (
                 <div key={vIdx} className="flex flex-col md:flex-row justify-between p-4 border rounded-lg bg-surface-elevated items-center">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">

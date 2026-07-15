@@ -28,7 +28,7 @@ class ReviewerRecommendationAgent:
         repo = state.get("repo", "")
         valid_files = state.get("valid_files", [])
 
-        # PR author might not be explicitly in state if we just have pull_number, but 
+        # PR author might not be explicitly in state if we just have pull_number, but
         # normally it would be passed. We'll use a placeholder if not present.
         pr_author = state.get("pr_author", "")
 
@@ -49,7 +49,9 @@ class ReviewerRecommendationAgent:
                 if not file_path:
                     continue
 
-                commits = await self.github_client.get_file_commits(owner, repo, file_path)
+                commits = await self.github_client.get_file_commits(
+                    owner, repo, file_path
+                )
                 for commit in commits:
                     # 'author' can be in commit['commit']['author']['name'] or commit['author']['login']
                     author_login = ""
@@ -57,12 +59,14 @@ class ReviewerRecommendationAgent:
                         author_login = commit["author"]["login"]
                     elif commit.get("commit", {}).get("author", {}).get("name"):
                         author_login = commit["commit"]["author"]["name"]
-                    
+
                     if author_login and author_login != pr_author:
                         author_counts[author_login] += 1
 
             if not author_counts:
-                recommended = "Could not determine a recommended reviewer based on history."
+                recommended = (
+                    "Could not determine a recommended reviewer based on history."
+                )
             else:
                 top_author = author_counts.most_common(1)[0][0]
                 recommended = f"Recommended reviewer: @{top_author} (based on past commits to these files)."
@@ -76,4 +80,6 @@ class ReviewerRecommendationAgent:
             logger.exception(
                 f"[ReviewerRecommendationAgent] Failed execution for PR {pull_number}"
             )
-            raise AgentExecutionError("ReviewerRecommendationAgent", pull_number, str(e)) from e
+            raise AgentExecutionError(
+                "ReviewerRecommendationAgent", pull_number, str(e)
+            ) from e

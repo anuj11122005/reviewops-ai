@@ -5,21 +5,28 @@ global exception handler per rules.md §5.
 """
 
 import logging
-from collections.abc import AsyncGenerator
+import time
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from typing import Any
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import time
 
-from app.api.routes import pull_requests, repositories, webhooks, models, monitoring
+from app.api.routes import models, monitoring, pull_requests, repositories, webhooks
 from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.db.session import init_engine
 
 logger = logging.getLogger(__name__)
+
+# ── Security & Rate Limiting Constants ──────────────
+# Simple in-memory rate limiting (for demonstration/Phase 4 hardening)
+RATE_LIMIT_DB: dict[str, list[float]] = {}
+RATE_LIMIT_WINDOW = 60  # seconds
+MAX_REQUESTS = 100
 
 
 # ── Lifespan ─────────────────────────────────────────────
@@ -64,28 +71,26 @@ def create_app() -> FastAPI:
     )
 
     # ── Security & Rate Limiting Middleware ──────────────
-    # Simple in-memory rate limiting (for demonstration/Phase 4 hardening)
-    RATE_LIMIT_DB = {}
-    RATE_LIMIT_WINDOW = 60  # seconds
-    MAX_REQUESTS = 100
 
     @app.middleware("http")
-    async def security_and_rate_limit(request: Request, call_next):
+    async def security_and_rate_limit(request: Request, call_next: Any) -> Response:
         client_ip = request.client.host if request.client else "unknown"
-        
+
         # Rate Limiting
         current_time = time.time()
         client_history = RATE_LIMIT_DB.get(client_ip, [])
-        client_history = [t for t in client_history if current_time - t < RATE_LIMIT_WINDOW]
-        
+        client_history = [
+            t for t in client_history if current_time - t < RATE_LIMIT_WINDOW
+        ]
+
         if len(client_history) >= MAX_REQUESTS:
             return JSONResponse(status_code=429, content={"error": "Too Many Requests"})
-            
+
         client_history.append(current_time)
         RATE_LIMIT_DB[client_ip] = client_history
 
         # Security Headers
-        response = await call_next(request)
+        response: Response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"

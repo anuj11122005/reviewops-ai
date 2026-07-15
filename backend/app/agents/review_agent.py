@@ -117,7 +117,7 @@ class ReviewAgent:
                         lines.append(f"- {iss}")
         else:
             lines.append("\nNo security issues found.")
-            
+
         docs = results.get("documentation", {})
         if docs and docs.get("pr_summary"):
             lines.append("\n### PR Summary & Release Notes")
@@ -132,7 +132,7 @@ class ReviewAgent:
         if reviewer:
             lines.append("\n### Reviewer Recommendation")
             lines.append(reviewer)
-            
+
         deployment = results.get("deployment_status", "")
         if deployment:
             lines.append("\n### Model Deployment Status")

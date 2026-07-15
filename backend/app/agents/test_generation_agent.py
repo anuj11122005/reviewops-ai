@@ -37,7 +37,7 @@ class TestGenerationAgent:
 
         try:
             files_list = [f.get("filename", "") for f in valid_files]
-            
+
             prompt = (
                 f"You are an expert QA engineer. Suggest unit tests for the following modified files in a Pull Request:\n"
                 f"{', '.join(files_list)}\n\n"
@@ -49,7 +49,13 @@ class TestGenerationAgent:
             logger.info(
                 f"[TestGenerationAgent] Finished execution for PR {pull_number}."
             )
-            return {"test_suggestions": test_suggestions if test_suggestions else "No test suggestions available."}
+            return {
+                "test_suggestions": (
+                    test_suggestions
+                    if test_suggestions
+                    else "No test suggestions available."
+                )
+            }
 
         except Exception as e:
             logger.exception(

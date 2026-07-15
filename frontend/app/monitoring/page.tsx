@@ -16,8 +16,17 @@ const mockLatencyData = [
   { time: "10:25", ms: 125 },
 ];
 
+type MetricsData = {
+  system_health: string;
+  prediction_accuracy: number;
+  drift_report?: {
+    drift_score?: number;
+  };
+  agent_latency_ms?: Record<string, number>;
+};
+
 export default function MonitoringPage() {
-  const [metrics, setMetrics] = useState<any>(null);
+  const [metrics, setMetrics] = useState<MetricsData | null>(null);
 
   useEffect(() => {
     fetch("http://localhost:8000/api/monitoring/metrics")
