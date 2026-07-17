@@ -75,4 +75,9 @@ class ValidationAgent:
             return {"valid_files": valid_files}
         except Exception as e:
             logger.exception(f"[ValidationAgent] Failed execution for PR {pull_number}")
-            raise AgentExecutionError("ValidationAgent", pull_number, str(e)) from e
+            raise AgentExecutionError(
+                "ValidationAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
+            ) from e

@@ -53,4 +53,6 @@ class DataAgent:
             return {"files": result}
         except Exception as e:
             logger.exception(f"[DataAgent] Failed to fetch data for PR {pull_number}")
-            raise AgentExecutionError("DataAgent", pull_number, str(e)) from e
+            raise AgentExecutionError(
+                "DataAgent", pull_number, state.get("head_sha", "unknown_hash"), str(e)
+            ) from e

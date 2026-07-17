@@ -38,9 +38,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     init_engine()
 
     if not settings.debug and not settings.github_webhook_secret:
-        logger.warning(
+        raise RuntimeError(
             "GITHUB_WEBHOOK_SECRET is empty in production. "
-            "Webhook signature verification is silently disabled!"
+            "Webhook signature verification cannot be bypassed."
         )
 
     logger.info("ReviewOps AI backend started")

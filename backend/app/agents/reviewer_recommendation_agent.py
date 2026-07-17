@@ -81,5 +81,8 @@ class ReviewerRecommendationAgent:
                 f"[ReviewerRecommendationAgent] Failed execution for PR {pull_number}"
             )
             raise AgentExecutionError(
-                "ReviewerRecommendationAgent", pull_number, str(e)
+                "ReviewerRecommendationAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
             ) from e

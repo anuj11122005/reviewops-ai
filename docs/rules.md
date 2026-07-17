@@ -47,8 +47,8 @@ These are binding conventions for anyone (human or AI) contributing code to this
 | Migrations | Alembic |
 | Validation | Pydantic |
 | Orchestration | LangGraph |
-| Classical ML | Scikit-learn, XGBoost, LightGBM |
-| LLM / embeddings | Hugging Face Transformers |
+| Classical ML | Scikit-learn (RandomForestClassifier is used for bug prediction; XGBoost/LightGBM removed as unnecessary) |
+| LLM / embeddings | HTTP Inference API (local Hugging Face Transformers removed as API calls are used) |
 | Experiment tracking | MLflow |
 | Dataset versioning | DVC |
 | Vector store | Qdrant |

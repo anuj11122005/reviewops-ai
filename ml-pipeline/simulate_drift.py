@@ -1,8 +1,8 @@
 import os
 import subprocess
 import pandas as pd
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset
+from evidently import Report
+from evidently.presets import DataDriftPreset
 import mlflow
 
 def run_simulation():
@@ -25,15 +25,21 @@ def run_simulation():
     curr_df = pd.read_csv("data/current.csv")
     
     report = Report(metrics=[DataDriftPreset()])
-    report.run(reference_data=ref_df, current_data=curr_df)
-    report_dict = report.as_dict()
+    snapshot = report.run(reference_data=ref_df, current_data=curr_df)
+    report_dict = snapshot.dict()
     
-    dataset_drift = report_dict["metrics"][0]["result"]["dataset_drift"]
-    print(f"Drift Detected: {dataset_drift}")
+    metrics = report_dict.get("metrics", [])
+    drifted_metric = next(m for m in metrics if m["config"]["type"] == "evidently:metric_v2:DriftedColumnsCount")
+    
+    share = drifted_metric["value"]["share"]
+    drift_share_threshold = drifted_metric["config"]["drift_share"]
+    dataset_drift = share >= drift_share_threshold
+    
+    print(f"Drift Detected: {dataset_drift} (Share: {share:.2f} >= {drift_share_threshold})")
     
     # Save report
     os.makedirs("reports", exist_ok=True)
-    report.save_html("reports/drift_report.html")
+    snapshot.save_html("reports/drift_report.html")
     print("Report saved to reports/drift_report.html")
     
     # 5. Retrain if drift detected

@@ -54,4 +54,9 @@ class MonitoringAgent:
 
         except Exception as e:
             logger.exception(f"[MonitoringAgent] Failed execution for PR {pull_number}")
-            raise AgentExecutionError("MonitoringAgent", pull_number, str(e)) from e
+            raise AgentExecutionError(
+                "MonitoringAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
+            ) from e

@@ -83,6 +83,7 @@ def client() -> Generator[TestClient, None, None]:
     with (
         patch("app.core.config.get_settings", return_value=_test_settings),
         patch("app.db.session.get_settings", return_value=_test_settings),
+        patch("app.main.get_settings", return_value=_test_settings),
         TestClient(app, raise_server_exceptions=False) as c,
     ):
         yield c

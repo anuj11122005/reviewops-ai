@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono, Geist } from "next/font/google";
 import { Sidebar } from "@/components/sidebar";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
+import { Providers } from "@/components/providers";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
@@ -35,8 +35,10 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", inter.variable, jetbrainsMono.variable, "font-sans", geist.variable)}
     >
       <body className="min-h-full flex bg-background text-text-primary">
-        <Sidebar />
-        <main className="flex-1 ml-64 p-8 overflow-auto">{children}</main>
+        <Providers>
+          <Sidebar />
+          <main className="flex-1 ml-64 p-8 overflow-auto">{children}</main>
+        </Providers>
       </body>
     </html>
   );

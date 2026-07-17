@@ -65,26 +65,25 @@ async def github_webhook(
     body = await request.body()
 
     # ── 1. Signature verification ────────────────────────
-    if settings.github_webhook_secret:
-        if not x_hub_signature_256:
-            logger.warning("Webhook received without signature header")
-            raise HTTPException(
-                status_code=401,
-                detail=_create_error(
-                    code="MISSING_SIGNATURE",
-                    message="X-Hub-Signature-256 header is required",
-                ),
-            )
-        if not verify_github_signature(
-            body, x_hub_signature_256, settings.github_webhook_secret
-        ):
-            raise HTTPException(
-                status_code=401,
-                detail=_create_error(
-                    code="INVALID_SIGNATURE",
-                    message="Webhook signature verification failed",
-                ),
-            )
+    if not x_hub_signature_256:
+        logger.warning("Webhook received without signature header")
+        raise HTTPException(
+            status_code=401,
+            detail=_create_error(
+                code="MISSING_SIGNATURE",
+                message="X-Hub-Signature-256 header is required",
+            ),
+        )
+    if not verify_github_signature(
+        body, x_hub_signature_256, settings.github_webhook_secret or ""
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail=_create_error(
+                code="INVALID_SIGNATURE",
+                message="Webhook signature verification failed",
+            ),
+        )
 
     # ── 2. Event type validation ─────────────────────────
     if x_github_event != "pull_request":

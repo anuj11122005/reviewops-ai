@@ -63,7 +63,12 @@ class ReviewAgent:
 
         except Exception as e:
             logger.exception(f"[ReviewAgent] Pipeline failed for PR {pull_number}")
-            raise AgentExecutionError("ReviewAgent", pull_number, str(e)) from e
+            raise AgentExecutionError(
+                "ReviewAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
+            ) from e
 
     def _template_comment(self, results: dict[str, Any]) -> str:
         """Create a markdown comment from the structured results."""

@@ -75,4 +75,9 @@ class ExplainabilityAgent:
             logger.exception(
                 f"[ExplainabilityAgent] Failed execution for PR {pull_number}"
             )
-            raise AgentExecutionError("ExplainabilityAgent", pull_number, str(e)) from e
+            raise AgentExecutionError(
+                "ExplainabilityAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
+            ) from e
