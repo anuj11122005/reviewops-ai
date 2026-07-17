@@ -77,3 +77,11 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+
+# ──────────────── Large / Binary / Generated Files ────────────────
+ngrok.exe
+ngrok.zip
+ml-pipeline/mlflow.db
+ml-pipeline/data/*.csv
+ml-pipeline/reports/*.html
+ml-pipeline/*.json
