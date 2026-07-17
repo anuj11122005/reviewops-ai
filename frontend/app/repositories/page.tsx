@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 interface Repository {
   id: number;
@@ -22,25 +22,14 @@ interface RepositoryListResponse {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function RepositoriesPage() {
-  const [data, setData] = useState<RepositoryListResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch(`${API_BASE}/api/repositories`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((json: RepositoryListResponse) => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const { data, isLoading: loading, error } = useQuery<RepositoryListResponse, Error>({
+    queryKey: ["repositories"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/repositories`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+  });
 
   return (
     <div>
@@ -70,7 +59,7 @@ export default function RepositoriesPage() {
           <p className="text-danger text-sm font-medium">
             Failed to load repositories
           </p>
-          <p className="text-text-muted text-xs mt-1">{error}</p>
+          <p className="text-text-muted text-xs mt-1">{error.message}</p>
           <p className="text-text-muted text-xs mt-2">
             Make sure the backend is running at {API_BASE}
           </p>

@@ -72,4 +72,6 @@ class DeploymentAgent:
 
         except Exception as e:
             logger.exception("[DeploymentAgent] Failed deployment evaluation.")
-            raise AgentExecutionError("DeploymentAgent", pr_id, str(e)) from e
+            raise AgentExecutionError(
+                "DeploymentAgent", pr_id, state.get("head_sha", "unknown_hash"), str(e)
+            ) from e

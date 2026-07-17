@@ -13,7 +13,13 @@ RUN apt-get update && \
 COPY pyproject.toml ./
 RUN pip install --no-cache-dir -e ".[dev]"
 
+# Create a non-root user and change ownership of the application directory
+RUN useradd -m -r appuser && chown -R appuser:appuser /app
+
 COPY . .
+
+# Switch to the non-root user
+USER appuser
 
 EXPOSE 8000
 

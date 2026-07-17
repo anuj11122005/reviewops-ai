@@ -63,4 +63,4 @@ class BugPredictionAgent:
             logger.exception(
                 f"[BugPredictionAgent] Failed execution for PR {pull_number}"
             )
-            raise AgentExecutionError("BugPredictionAgent", pull_number, str(e)) from e
+            raise AgentExecutionError("BugPredictionAgent", pull_number, state.get("head_sha", "unknown_hash"), str(e)) from e

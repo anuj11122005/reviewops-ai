@@ -82,4 +82,4 @@ class EmbeddingAgent:
 
         except Exception as e:
             logger.exception(f"[EmbeddingAgent] Failed execution for PR {pull_number}")
-            raise AgentExecutionError("EmbeddingAgent", pull_number, str(e)) from e
+            raise AgentExecutionError("EmbeddingAgent", pull_number, state.get("head_sha", "unknown_hash"), str(e)) from e
