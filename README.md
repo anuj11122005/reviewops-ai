@@ -28,7 +28,7 @@ reviewops-ai/
 | Backend | FastAPI · SQLAlchemy · Alembic · Pydantic · Python 3.12 |
 | Frontend | Next.js · TypeScript · Tailwind CSS · Shadcn UI · React Query · Framer Motion |
 | Orchestration | LangGraph |
-| ML | Scikit-learn · XGBoost · LightGBM · Hugging Face Transformers |
+| ML | Scikit-learn (RandomForest) · HTTP Inference API |
 | MLOps | MLflow · DVC · Evidently AI |
 | Data | PostgreSQL · Redis · Qdrant · MinIO |
 | Monitoring | Prometheus · Grafana |
