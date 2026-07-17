@@ -69,4 +69,9 @@ class DocumentationAgent:
             logger.exception(
                 f"[DocumentationAgent] Failed execution for PR {pull_number}"
             )
-            raise AgentExecutionError("DocumentationAgent", pull_number, state.get("head_sha", "unknown_hash"), str(e)) from e
+            raise AgentExecutionError(
+                "DocumentationAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
+            ) from e

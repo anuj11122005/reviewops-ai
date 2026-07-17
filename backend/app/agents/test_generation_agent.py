@@ -61,4 +61,9 @@ class TestGenerationAgent:
             logger.exception(
                 f"[TestGenerationAgent] Failed execution for PR {pull_number}"
             )
-            raise AgentExecutionError("TestGenerationAgent", pull_number, state.get("head_sha", "unknown_hash"), str(e)) from e
+            raise AgentExecutionError(
+                "TestGenerationAgent",
+                pull_number,
+                state.get("head_sha", "unknown_hash"),
+                str(e),
+            ) from e

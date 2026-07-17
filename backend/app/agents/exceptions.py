@@ -6,6 +6,7 @@ class AgentExecutionError(Exception):
     ) -> None:
         if input_hash == "unknown_hash":
             import logging
+
             logging.getLogger(__name__).warning(
                 f"Missing head_sha in state when raising AgentExecutionError in {agent_name} for PR {pr_id}"
             )
