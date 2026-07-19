@@ -7,11 +7,10 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score
 import mlflow
 import mlflow.sklearn
 
-# os.environ["MLFLOW_TRACKING_URI"] = "http://localhost:5000"
-# os.environ["MLFLOW_S3_ENDPOINT_URL"] = "http://localhost:9000"
-# os.environ["AWS_ACCESS_KEY_ID"] = "minioadmin"
-# os.environ["AWS_SECRET_ACCESS_KEY"] = "minioadmin"
-
+os.environ["MLFLOW_TRACKING_URI"] = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv("MLFLOW_S3_ENDPOINT_URL", "http://minio:9000")
+os.environ["AWS_ACCESS_KEY_ID"] = os.getenv("AWS_ACCESS_KEY_ID", "admin")
+os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv("AWS_SECRET_ACCESS_KEY", "password")
 def train(data_path: str):
     """Train the model and log to MLflow."""
     print(f"Loading data from {data_path}...")

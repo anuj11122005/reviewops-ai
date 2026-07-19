@@ -96,7 +96,7 @@ services:
       - reviewops
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.10.2
+    image: ghcr.io/mlflow/mlflow:v2.14.3
     container_name: reviewops-mlflow
     ports:
       - "5000:5000"
@@ -105,10 +105,10 @@ services:
       - AWS_SECRET_ACCESS_KEY=password
       - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
     command: >
-      mlflow server
+      sh -c "pip install psycopg2-binary && mlflow server
       --backend-store-uri postgresql://reviewops:reviewops@postgres:5432/reviewops
       --default-artifact-root s3://mlflow/
-      --host 0.0.0.0
+      --host 0.0.0.0"
     depends_on:
       - postgres
       - minio

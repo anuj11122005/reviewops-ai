@@ -11,12 +11,16 @@ RUN apt-get update && \
 
 # Copy project files and install Python dependencies.
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e ".[dev]"
+RUN pip install uv && uv pip install --system --no-cache -e ".[dev]"
 
-# Create a non-root user and change ownership of the application directory
-RUN useradd -m -r appuser && chown -R appuser:appuser /app
+# Create a non-root user
+RUN useradd -m -r appuser
 
-COPY . .
+# Copy application source with correct ownership from the start
+COPY --chown=appuser:appuser . .
+
+# Ensure the entire /app directory (including pip-installed files from earlier layers) is owned by appuser
+RUN chown -R appuser:appuser /app
 
 # Switch to the non-root user
 USER appuser

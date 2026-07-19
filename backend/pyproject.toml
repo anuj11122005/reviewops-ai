@@ -21,7 +21,6 @@ dependencies = [
     "langgraph>=0.0.26",
     "langchain-core>=0.1.30",
     "mlflow>=2.10.0",
-    "docker==7.1.0",
     "dvc[s3]>=3.40.0",
     "scikit-learn>=1.4.0",
     "pandas>=2.2.0",
