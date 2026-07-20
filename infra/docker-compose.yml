@@ -87,9 +87,9 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc config host add myminio http://minio:9000 admin password;
-      /usr/bin/mc mb myminio/mlflow;
-      /usr/bin/mc mb myminio/dvc;
+      /usr/bin/mc alias set myminio http://minio:9000 admin password;
+      /usr/bin/mc mb --ignore-existing myminio/mlflow;
+      /usr/bin/mc mb --ignore-existing myminio/dvc;
       exit 0;
       "
     networks:
@@ -142,6 +142,22 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+    networks:
+      - reviewops
+
+  ml-pipeline:
+    build:
+      context: ../ml-pipeline
+      dockerfile: Dockerfile
+    container_name: reviewops-ml-pipeline
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+    depends_on:
+      - mlflow
+      - minio
     networks:
       - reviewops
 
