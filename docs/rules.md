@@ -24,6 +24,7 @@ These are binding conventions for anyone (human or AI) contributing code to this
 - Cache expensive/deterministic model calls in the Model Gateway (Redis-backed).
 - Document every new module with a short docstring header explaining its responsibility.
 - Use feature branches + meaningful commit messages tied to the feature lifecycle (understand → design → implement → test → document → commit).
+- Use `uv` (not `pip`) for dependency installation in all Dockerfiles — it provides faster resolution, better caching, and more reliable wheel negotiation.
 
 ## 3. What To Avoid
 
@@ -68,8 +69,18 @@ These are binding conventions for anyone (human or AI) contributing code to this
 | Code formatting/linting (backend) | Black, Ruff, isort, mypy |
 | CI/CD | GitHub Actions |
 | Containerization | Docker, Docker Compose |
+| Package installation (Dockerfiles) | `uv` (replaces pip for speed and reliability) |
+| S3/artifact upload | boto3 (required by mlflow for MinIO artifact storage) |
 
 Do not introduce a competing library for something already on this list (e.g., no Poetry-vs-pip debates mid-project, no swapping XGBoost for CatBoost without a documented reason) without updating this file first.
+
+### Dependency Pins
+
+| Pin | Reason |
+|---|---|
+| `setuptools<78` (ml-pipeline) | mlflow 2.14.3 imports `pkg_resources`, removed from setuptools ≥78 |
+| `mlflow-skinny==2.14.3` (backend) | Lightweight MLflow client — avoids pulling scipy/sklearn into the backend |
+| `mlflow==2.14.3` (ml-pipeline) | Full MLflow with model logging, artifact upload, and UI support |
 
 ## 5. Error Handling
 

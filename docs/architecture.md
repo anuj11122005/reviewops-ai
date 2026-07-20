@@ -155,10 +155,14 @@ reviewops-ai/
 │   └── Dockerfile
 │
 ├── ml-pipeline/
-│   ├── dvc.yaml
+│   ├── Dockerfile                   # Dedicated container (full mlflow + scipy + evidently)
+│   ├── requirements.txt             # ML-specific deps, separate from backend
+│   ├── simulate_drift.py            # Drift detection + retraining pipeline
+│   ├── train.py                     # Model training script (logs to MLflow)
+│   ├── generate_data.py             # Synthetic data generation
 │   ├── data/                        # DVC-tracked datasets
-│   ├── notebooks/
-│   └── mlflow/
+│   ├── reports/                     # Evidently drift reports
+│   └── notebooks/
 │
 ├── infra/
 │   ├── docker-compose.yml
@@ -195,26 +199,29 @@ reviewops-ai/
 - Alembic (migrations)
 - Pydantic (validation)
 - Python 3.12
+- `mlflow-skinny==2.14.3` (lightweight client — API calls only, no scipy/sklearn)
+- `uv` (fast dependency installer, replaces pip in Dockerfiles)
 
 ### Agent Orchestration
 - LangGraph
 
-### Machine Learning
-- Scikit-learn
-- XGBoost
-- LightGBM
-- Hugging Face Transformers
+### Machine Learning (ml-pipeline only)
+- Scikit-learn (RandomForestClassifier for bug prediction)
+- Hugging Face HTTP Inference API (via Model Gateway)
 
-### MLOps
-- MLflow (experiment tracking, model registry)
+### MLOps (ml-pipeline only)
+- MLflow v2.14.3 full (experiment tracking, model registry, artifact storage)
 - DVC (dataset versioning)
-- Evidently AI (ML quality / drift monitoring)
+- Evidently AI (data drift + concept drift detection)
+- scipy, pandas, boto3 (transitive deps for ML/artifact operations)
 
 ### Data Layer
-- PostgreSQL (relational data)
+- PostgreSQL — two databases:
+  - `reviewops` — main application data (repos, PRs, reviews, feedback)
+  - `mlflow` — MLflow backend store (experiments, runs, model registry)
 - Redis (caching)
 - Qdrant (vector embeddings)
-- MinIO (artifact/model file storage)
+- MinIO (S3-compatible artifact/model file storage)
 
 ### Monitoring
 - Prometheus (metrics collection)
@@ -222,6 +229,7 @@ reviewops-ai/
 
 ### Infrastructure
 - Docker + Docker Compose (current)
+- `uv` for dependency installation in all Dockerfiles (faster, more reliable than pip)
 - Kubernetes (future)
 - GitHub Actions (CI/CD)
 
@@ -232,7 +240,41 @@ reviewops-ai/
 - **LangGraph for orchestration**: gives explicit, inspectable state transitions between agents instead of ad-hoc function chaining.
 - **Static analysis + ML + LLM as three distinct layers**: deterministic checks are never replaced by probabilistic ones — they run alongside each other, and outputs are merged by the Review Agent.
 
-## 7. Phase 4 Deviations
+## 7. Split Dependency Architecture
+
+The backend and ml-pipeline use **separate dependency trees** to avoid the backend inheriting heavyweight ML/science packages:
+
+| Component | MLflow variant | scipy/sklearn/evidently | Install time |
+|---|---|---|---|
+| `backend/` | `mlflow-skinny==2.14.3` | ❌ Not installed | ~33s (185 packages) |
+| `ml-pipeline/` | `mlflow==2.14.3` (full) | ✅ All installed | ~37s (118 packages) |
+
+This split exists because `evidently` → `scipy` → C/Fortran extensions, which in certain environments trigger multi-minute source compilation from gcc. By isolating these to `ml-pipeline/`, the backend build stays fast and predictable.
+
+### Key dependency pins in ml-pipeline
+- `setuptools<78` — mlflow 2.14.3 uses `pkg_resources`, removed from setuptools ≥78
+- `boto3` — required for S3/MinIO artifact upload (not bundled with mlflow by default)
+
+## 8. Database Layout
+
+PostgreSQL hosts two separate databases on the same instance:
+
+| Database | Purpose | Managed by |
+|---|---|---|
+| `reviewops` | App data (repos, PRs, reviews, feedback) | Alembic migrations |
+| `mlflow` | MLflow backend store (experiments, runs, model versions) | MLflow server (auto-managed) |
+
+The MLflow server connects to `postgresql://reviewops:reviewops@postgres:5432/mlflow` and manages its own schema. The backend connects to `postgresql://reviewops:reviewops@postgres:5432/reviewops`.
+
+## 9. MinIO Bucket Initialization
+
+The `createbuckets` init container creates two S3 buckets on startup:
+- `mlflow/` — MLflow artifact storage (model binaries, metrics)
+- `dvc/` — DVC dataset storage
+
+Uses `mc alias set` (modern MinIO Client syntax, not the deprecated `mc config host add`).
+
+## 10. Phase 4 Deviations
 - **Model Registry Database**: Instead of duplicating `MLModel` and `MLDeployment` records into the PostgreSQL database using SQLAlchemy, the `models.py` API route and `DeploymentAgent` interface directly with `mlflow.client.MlflowClient`. This avoids maintaining state in two places and relies on MLflow as the source of truth.
 - **Frontend Dashboard**: Components were implemented manually using Tailwind CSS for Phases 1-3, and Shadcn UI was introduced in Phase 4 via CLI (`npx shadcn@latest init`).
 - **Kubernetes**: Exploratory K8s manifests added to `infra/k8s/` are standard boilerplate and not actively deployed since we are currently running on Docker Compose.
