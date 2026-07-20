@@ -21,6 +21,7 @@ dependencies = [
     "langgraph>=0.0.26",
     "langchain-core>=0.1.30",
     "mlflow-skinny==2.14.3",
+    "setuptools<78",
     "dvc[s3]>=3.40.0",
     "prometheus-client>=0.20.0",
 ]
