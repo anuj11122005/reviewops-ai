@@ -47,7 +47,7 @@ class GitHubClient:
         url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pull_number}/files"
         logger.info(f"Fetching PR files from {url}")
 
-        async with httpx.AsyncClient(headers=self.headers) as client:
+        async with httpx.AsyncClient(headers=self.headers, follow_redirects=True) as client:
             response = await client.get(url)
             response.raise_for_status()
             return response.json()  # type: ignore
@@ -62,7 +62,7 @@ class GitHubClient:
         """Fetch the raw content of a file."""
         logger.debug(f"Fetching raw file content from {raw_url}")
 
-        async with httpx.AsyncClient(headers=self.headers) as client:
+        async with httpx.AsyncClient(headers=self.headers, follow_redirects=True) as client:
             response = await client.get(raw_url)
             response.raise_for_status()
             return response.text
@@ -82,7 +82,7 @@ class GitHubClient:
         )
         logger.info(f"Posting review comment to {url}")
 
-        async with httpx.AsyncClient(headers=self.headers) as client:
+        async with httpx.AsyncClient(headers=self.headers, follow_redirects=True) as client:
             response = await client.post(url, json={"body": body})
             response.raise_for_status()
 
@@ -100,7 +100,7 @@ class GitHubClient:
         params: dict[str, str | int] = {"path": file_path, "per_page": 100}
         logger.info(f"Fetching commit history for {file_path} from {url}")
 
-        async with httpx.AsyncClient(headers=self.headers) as client:
+        async with httpx.AsyncClient(headers=self.headers, follow_redirects=True) as client:
             response = await client.get(url, params=params)
             response.raise_for_status()
             return response.json()  # type: ignore
