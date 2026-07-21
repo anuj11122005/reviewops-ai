@@ -166,6 +166,10 @@ async def run_review_agent_task(
                 review.static_analysis_results = final_review.get("static_analysis")
                 review.security_results = final_review.get("security_findings")
                 review.explainability_results = final_review.get("explanations")
+                review.documentation_results = final_review.get("documentation")
+                review.test_generation_results = final_review.get("test_suggestions")
+                review.reviewer_recommendation_results = final_review.get("recommended_reviewer")
+                review.deployment_status_results = final_review.get("deployment_status")
             db.commit()
     except Exception as e:
         logger.exception(f"Review pipeline failed for PR {pull_number}: {e}")
