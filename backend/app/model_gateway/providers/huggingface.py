@@ -1,6 +1,7 @@
 """Hugging Face provider for the Model Gateway."""
 
 import logging
+from typing import cast
 
 from huggingface_hub import AsyncInferenceClient
 from tenacity import (
@@ -40,10 +41,10 @@ class HuggingFaceProvider:
             import numpy as np
             response = await self.client.feature_extraction(texts, model=model)
             if isinstance(response, np.ndarray):
-                return response.tolist()
+                return cast(list[list[float]], response.tolist())
             if not isinstance(response, list):
                 raise HuggingFaceProviderError(f"Unexpected response type: {type(response)}")
-            return response
+            return cast(list[list[float]], response)
         except Exception as e:
             raise HuggingFaceProviderError(f"Failed to get embeddings: {e}") from e
 
