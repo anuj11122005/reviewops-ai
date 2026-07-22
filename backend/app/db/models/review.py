@@ -29,9 +29,13 @@ class Review(TimestampMixin, Base):
     explainability_results: Mapped[dict[str, Any] | None] = mapped_column(
         JSON, nullable=True
     )
-    documentation_results: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    documentation_results: Mapped[dict[str, Any] | None] = mapped_column(
+        JSON, nullable=True
+    )
     test_generation_results: Mapped[str | None] = mapped_column(String, nullable=True)
-    reviewer_recommendation_results: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewer_recommendation_results: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
     deployment_status_results: Mapped[str | None] = mapped_column(String, nullable=True)
     github_comment_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
 

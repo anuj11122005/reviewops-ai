@@ -53,14 +53,14 @@ class ModelGateway:
                 await self.cache.set(cache_key, embeddings)
                 return embeddings
             except Exception as e:
-                logger.warning(f"Failed to get embeddings from {model}: {e}. Trying fallback...")
+                logger.warning(
+                    f"Failed to get embeddings from {model}: {e}. Trying fallback..."
+                )
 
         logger.error("All embedding models failed.")
         return None
 
-    async def generate_text(
-        self, prompt: str, model: str | None = None
-    ) -> str | None:
+    async def generate_text(self, prompt: str, model: str | None = None) -> str | None:
         """Generate text, using cache and fallback logic."""
         if not prompt:
             return None
@@ -82,7 +82,9 @@ class ModelGateway:
                 await self.cache.set(cache_key, text)
                 return text
             except Exception as e:
-                logger.warning(f"Failed to generate text from {m}: {e}. Trying fallback...")
+                logger.warning(
+                    f"Failed to generate text from {m}: {e}. Trying fallback..."
+                )
 
         logger.error("All text generation models failed.")
         return None

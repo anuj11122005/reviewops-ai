@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class HuggingFaceProviderError(Exception):
     """Raised when Hugging Face API calls fail."""
+
     pass
 
 
@@ -39,11 +40,14 @@ class HuggingFaceProvider:
         """Get embeddings for a list of texts."""
         try:
             import numpy as np
+
             response = await self.client.feature_extraction(texts, model=model)
             if isinstance(response, np.ndarray):
                 return cast(list[list[float]], response.tolist())
             if not isinstance(response, list):
-                raise HuggingFaceProviderError(f"Unexpected response type: {type(response)}")
+                raise HuggingFaceProviderError(
+                    f"Unexpected response type: {type(response)}"
+                )
             return cast(list[list[float]], response)
         except Exception as e:
             raise HuggingFaceProviderError(f"Failed to get embeddings: {e}") from e

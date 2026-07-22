@@ -7,7 +7,9 @@ from app.main import lifespan
 
 
 @pytest.mark.asyncio
-async def test_startup_fails_without_webhook_secret_in_prod(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_startup_fails_without_webhook_secret_in_prod(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Confirm the app refuses to start in production without a webhook secret."""
 
     # Force production mode and empty secret

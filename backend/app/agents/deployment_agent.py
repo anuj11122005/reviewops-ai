@@ -16,7 +16,9 @@ class DeploymentAgent:
     """Agent that handles model promotion, canary evaluation, and rollback."""
 
     def __init__(self, tracking_uri: str | None = None) -> None:
-        self.tracking_uri = tracking_uri or os.environ.get("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+        self.tracking_uri = tracking_uri or os.environ.get(
+            "MLFLOW_TRACKING_URI", "http://mlflow:5000"
+        )
         self.client = MlflowClient(tracking_uri=self.tracking_uri)
 
     async def execute(self, state: dict[str, Any]) -> dict[str, Any]:
@@ -34,7 +36,9 @@ class DeploymentAgent:
 
             try:
                 versions = self.client.search_model_versions(f"name='{model_name}'")
-                latest_versions = sorted(versions, key=lambda v: int(v.version), reverse=True)
+                latest_versions = sorted(
+                    versions, key=lambda v: int(v.version), reverse=True
+                )
             except mlflow.exceptions.RestException:
                 return {"deployment_status": "No registered models found."}
 
