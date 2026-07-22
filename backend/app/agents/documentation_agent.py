@@ -36,16 +36,18 @@ class DocumentationAgent:
             return {"documentation": {}}
 
         try:
-            # We don't have the full diff strings by default in valid_files,
-            # but we assume the agent can summarize based on filenames or a mock representation
-            # if diff isn't fully available, or we use a basic prompt.
-            # In a real scenario, we'd fetch the diff using GitHubClient.
-            files_list = [f.get("filename", "") for f in valid_files]
+            files_list = []
+            for f in valid_files:
+                fname = f.get("filename", "")
+                content = f.get("content", "")[:2000]
+                files_list.append(f"{fname}:\n```\n{content}\n```")
+
+            files_context = "\n\n".join(files_list)
 
             prompt = (
                 f"You are an AI technical writer. Generate a concise PR summary and release notes "
-                f"based on the following modified files:\n"
-                f"{', '.join(files_list)}\n\n"
+                f"based on the following modified files and their content:\n"
+                f"{files_context}\n\n"
                 f"Provide output in Markdown format."
             )
 

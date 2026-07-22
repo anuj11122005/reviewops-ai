@@ -23,7 +23,10 @@ class ModelGateway:
         self.cache = ModelCache()
         self.hf_provider = HuggingFaceProvider(token=hf_token)
         # Default model for embeddings
-        self.default_embedding_model = "sentence-transformers/all-MiniLM-L6-v2"
+        self.default_embedding_models = [
+            "sentence-transformers/all-MiniLM-L6-v2",
+            "BAAI/bge-small-en-v1.5",
+        ]
 
     def _generate_cache_key(self, prefix: str, data: Any) -> str:
         """Generate a consistent cache key."""
@@ -43,37 +46,45 @@ class ModelGateway:
 
             return cast(list[list[float]], cached)
 
-        logger.info(f"Fetching embeddings from HF model {self.default_embedding_model}")
-        try:
-            embeddings = await self.hf_provider.get_embeddings(
-                texts, self.default_embedding_model
-            )
-            await self.cache.set(cache_key, embeddings)
-            return embeddings
-        except Exception as e:
-            logger.exception(f"Failed to get embeddings: {e}")
-            # In Phase 2, we return None if embeddings fail rather than crashing,
-            # so downstream can handle it gracefully.
-            return None
+        for model in self.default_embedding_models:
+            logger.info(f"Fetching embeddings from HF model {model}")
+            try:
+                embeddings = await self.hf_provider.get_embeddings(texts, model)
+                await self.cache.set(cache_key, embeddings)
+                return embeddings
+            except Exception as e:
+                logger.warning(
+                    f"Failed to get embeddings from {model}: {e}. Trying fallback..."
+                )
 
-    async def generate_text(
-        self, prompt: str, model: str = "HuggingFaceH4/zephyr-7b-beta"
-    ) -> str | None:
+        logger.error("All embedding models failed.")
+        return None
+
+    async def generate_text(self, prompt: str, model: str | None = None) -> str | None:
         """Generate text, using cache and fallback logic."""
         if not prompt:
             return None
 
-        cache_key = self._generate_cache_key("text_gen", f"{model}:{prompt}")
-        cached = await self.cache.get(cache_key)
-        if cached:
-            logger.debug("Generated text found in cache.")
-            return str(cached)
+        models = ["Qwen/Qwen2.5-7B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3"]
+        if model and model != "HuggingFaceH4/zephyr-7b-beta":
+            models = [model] + models
 
-        logger.info(f"Generating text from HF model {model}")
-        try:
-            text = await self.hf_provider.generate_text(prompt, model)
-            await self.cache.set(cache_key, text)
-            return text
-        except Exception as e:
-            logger.exception(f"Failed to generate text: {e}")
-            return None
+        for m in models:
+            cache_key = self._generate_cache_key("text_gen", f"{m}:{prompt}")
+            cached = await self.cache.get(cache_key)
+            if cached:
+                logger.debug("Generated text found in cache.")
+                return str(cached)
+
+            logger.info(f"Generating text from HF model {m}")
+            try:
+                text = await self.hf_provider.generate_text(prompt, m)
+                await self.cache.set(cache_key, text)
+                return text
+            except Exception as e:
+                logger.warning(
+                    f"Failed to generate text from {m}: {e}. Trying fallback..."
+                )
+
+        logger.error("All text generation models failed.")
+        return None

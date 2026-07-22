@@ -1,6 +1,7 @@
 """Deployment Agent: Validates candidate models and performs canary rollouts."""
 
 import logging
+import os
 from typing import Any
 
 import mlflow
@@ -14,9 +15,11 @@ logger = logging.getLogger(__name__)
 class DeploymentAgent:
     """Agent that handles model promotion, canary evaluation, and rollback."""
 
-    def __init__(self, tracking_uri: str = "http://localhost:5000") -> None:
-        self.tracking_uri = tracking_uri
-        self.client = MlflowClient(tracking_uri=tracking_uri)
+    def __init__(self, tracking_uri: str | None = None) -> None:
+        self.tracking_uri = tracking_uri or os.environ.get(
+            "MLFLOW_TRACKING_URI", "http://mlflow:5000"
+        )
+        self.client = MlflowClient(tracking_uri=self.tracking_uri)
 
     async def execute(self, state: dict[str, Any]) -> dict[str, Any]:
         """Validate and deploy the latest candidate model.
@@ -32,8 +35,9 @@ class DeploymentAgent:
             model_name = "BugPredictor"
 
             try:
-                latest_versions = self.client.get_latest_versions(
-                    model_name, stages=["None", "Staging"]
+                versions = self.client.search_model_versions(f"name='{model_name}'")
+                latest_versions = sorted(
+                    versions, key=lambda v: int(v.version), reverse=True
                 )
             except mlflow.exceptions.RestException:
                 return {"deployment_status": "No registered models found."}
@@ -55,11 +59,10 @@ class DeploymentAgent:
 
             if accuracy >= baseline_accuracy:
                 # Promote to production
-                self.client.transition_model_version_stage(
+                self.client.set_registered_model_alias(
                     name=model_name,
+                    alias="Production",
                     version=candidate.version,
-                    stage="Production",
-                    archive_existing_versions=True,
                 )
                 status = f"Promoted version {candidate.version} to Production (Accuracy: {accuracy:.2f})."
                 logger.info(f"[DeploymentAgent] {status}")

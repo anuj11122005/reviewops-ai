@@ -103,3 +103,6 @@ Every PR to this repo must pass, via GitHub Actions:
 5. No secrets detected in diff.
 
 Merges are blocked if any gate fails.
+
+## Agent Limitations
+- **BugPredictionAgent**: The current heuristic relies purely on LOC, cyclomatic complexity, and comment density, which is blind to actual security flaws or code content. Consider feeding the static analysis findings count (e.g. Bandit/Pylint findings) as an input feature to the bug probability heuristic so files with real findings score higher.
