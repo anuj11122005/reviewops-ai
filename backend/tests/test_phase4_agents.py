@@ -8,7 +8,7 @@ from app.agents.deployment_agent import DeploymentAgent
 from app.agents.documentation_agent import DocumentationAgent
 from app.agents.exceptions import AgentExecutionError
 from app.agents.reviewer_recommendation_agent import ReviewerRecommendationAgent
-from app.agents.test_generation_agent import TestGenerationAgent
+from app.agents.test_generation_agent import TestGenerationAgent as _TestGenerationAgent
 
 
 @pytest.mark.asyncio
@@ -38,7 +38,7 @@ async def test_test_generation_agent() -> None:
     mock_gateway = AsyncMock()
     mock_gateway.generate_text.return_value = "def test_something():\n    pass"
 
-    agent = TestGenerationAgent(model_gateway=mock_gateway)
+    agent = _TestGenerationAgent(model_gateway=mock_gateway)
     state = {"pull_number": 123, "valid_files": [{"filename": "main.py"}]}
 
     result = await agent.execute(state)
@@ -97,7 +97,7 @@ async def test_deployment_agent(mock_mlflow_client_class: MagicMock) -> None:
     mock_version = MagicMock()
     mock_version.run_id = "run_123"
     mock_version.version = "2"
-    mock_client_instance.get_latest_versions.return_value = [mock_version]
+    mock_client_instance.search_model_versions.return_value = [mock_version]
 
     # Setup mock metrics for successful canary (accuracy >= 0.70)
     mock_run = MagicMock()
@@ -110,24 +110,23 @@ async def test_deployment_agent(mock_mlflow_client_class: MagicMock) -> None:
     result = await agent.execute(state)
     assert "deployment_status" in result
     assert "Promoted version 2" in result["deployment_status"]
-    mock_client_instance.transition_model_version_stage.assert_called_with(
+    mock_client_instance.set_registered_model_alias.assert_called_with(
         name="BugPredictor",
+        alias="Production",
         version="2",
-        stage="Production",
-        archive_existing_versions=True,
     )
 
     # Test failed canary / rollback (accuracy < 0.70)
-    mock_client_instance.transition_model_version_stage.reset_mock()
+    mock_client_instance.set_registered_model_alias.reset_mock()
     mock_run.data.metrics = {"accuracy": 0.65}
 
     result = await agent.execute(state)
     assert "Rollback" in result["deployment_status"]
     assert "rejected" in result["deployment_status"]
-    mock_client_instance.transition_model_version_stage.assert_not_called()
+    mock_client_instance.set_registered_model_alias.assert_not_called()
 
     # Test error handling
-    mock_client_instance.get_latest_versions.side_effect = Exception(
+    mock_client_instance.search_model_versions.side_effect = Exception(
         "MLflow API failure"
     )
     with pytest.raises(AgentExecutionError):

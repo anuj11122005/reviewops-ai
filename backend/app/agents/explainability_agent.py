@@ -45,6 +45,20 @@ class ExplainabilityAgent:
                 "You are an AI software engineering reviewer. Explain the following "
                 "findings in 2-3 concise paragraphs. Focus on the most critical risks.\n\n"
             )
+
+            if "valid_files" in state:
+                files_list = []
+                for f in state["valid_files"]:
+                    fname = f.get("filename", "")
+                    content = f.get("content", "")[:2000]
+                    files_list.append(f"{fname}:\n```\n{content}\n```")
+                files_context = "\n\n".join(files_list)
+                prompt += "Source Code:\n" + files_context + "\n\n"
+
+            if "static_analysis" in state:
+                prompt += "Static Analysis Findings:\n"
+                prompt += json.dumps(state["static_analysis"], indent=2) + "\n\n"
+
             if bug_probabilities:
                 prompt += "Bug Probabilities:\n"
                 prompt += json.dumps(bug_probabilities, indent=2) + "\n\n"

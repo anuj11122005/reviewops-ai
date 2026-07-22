@@ -24,6 +24,7 @@ dependencies = [
     "setuptools<78",
     "dvc[s3]>=3.40.0",
     "prometheus-client>=0.20.0",
+    "huggingface_hub>=0.24.0",
 ]
 
 [project.optional-dependencies]

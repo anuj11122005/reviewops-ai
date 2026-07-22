@@ -36,11 +36,20 @@ class TestGenerationAgent:
             return {"test_suggestions": ""}
 
         try:
-            files_list = [f.get("filename", "") for f in valid_files]
+            files_list = []
+            for f in valid_files:
+                fname = f.get("filename", "")
+                content = f.get("content", "")[:2000]
+                files_list.append(f"{fname}:\n```\n{content}\n```")
+
+            files_context = "\n\n".join(files_list)
+            static_analysis = state.get("static_analysis", {})
 
             prompt = (
                 f"You are an expert QA engineer. Suggest unit tests for the following modified files in a Pull Request:\n"
-                f"{', '.join(files_list)}\n\n"
+                f"{files_context}\n\n"
+                f"Consider these static analysis findings (if any):\n"
+                f"{static_analysis}\n\n"
                 f"Provide 2-3 specific test case scenarios or code snippets."
             )
 
