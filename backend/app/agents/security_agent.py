@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Basic heuristics for demonstration
 PATTERNS = {
     "sql_injection": re.compile(
-        r"(SELECT|INSERT|UPDATE|DELETE|DROP).*?(?:'|\").*?(?:\%s|\%d|\{.*?\})",
+        r"(?:f['\"].*?(?:SELECT|INSERT|UPDATE|DELETE|DROP).*?\{.*?\}|(?:SELECT|INSERT|UPDATE|DELETE|DROP).*?(?:'|\").*?(?:\%s|\%d|\{.*?\}))",
         re.IGNORECASE,
     ),
     "xss": re.compile(r"(innerHTML|document\.write\(|eval\().*?\+.*?"),
